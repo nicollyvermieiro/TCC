@@ -1,0 +1,1 @@
+O projeto segue a arquitetura MVC com os diretórios control (controladores), model (entidades), view (interfaces) e config (configurações)
