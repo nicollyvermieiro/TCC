@@ -14,22 +14,28 @@ class UsuarioTest extends TestCase
 
     public function testCriarUsuario()
     {
-        $this->usuario->nome = "Teste Unit";
-        $this->usuario->email = "testeunit@example.com";
+        $this->usuario->nome = "Teste Unitário";
+        $this->usuario->email = "teste_unit" . uniqid() . "@example.com"; // email único garantido
         $this->usuario->senha = password_hash("123456", PASSWORD_DEFAULT);
-        $this->usuario->cargo_id = 1;
+        $this->usuario->cargo_id = 1; // certifique-se que o cargo com id 1 exista
 
         $result = $this->usuario->criar();
-        $this->assertTrue($result);
+        $this->assertTrue($result, "Falha ao criar usuário. Verifique se cargo_id 1 existe.");
     }
 
     public function testBuscarPorId()
     {
-        $usuario = $this->usuario->buscarPorId(1); // Assuma que usuário com id 1 exista no banco
-        $this->assertIsArray($usuario);
-        $this->assertArrayHasKey('id', $usuario);
-        $this->assertEquals(1, $usuario['id']);
-    }
+        $this->usuario->nome = "Teste Buscar";
+        $this->usuario->email = "buscar_" . uniqid() . "@example.com";
+        $this->usuario->senha = password_hash("123456", PASSWORD_DEFAULT);
+        $this->usuario->cargo_id = 1;
+        $this->usuario->criar();
 
-    // Outros testes para atualizar, excluir etc.
+        $id = $this->usuario->id; // obtém o ID do usuário criado
+        $usuario = $this->usuario->buscarPorId($id);
+
+        $this->assertIsArray($usuario, "Usuário não retornado como array.");
+        $this->assertArrayHasKey('id', $usuario);
+        $this->assertEquals($id, $usuario['id']);
+    }
 }

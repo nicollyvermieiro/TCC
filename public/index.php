@@ -5,12 +5,15 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../app/helpers/session.php';
 
+// Pega a rota da URL, exemplo: ?route=auth/login
 $route = $_GET['route'] ?? 'auth/loginForm';
 
+// Separa controller e método
 $parts = explode('/', $route);
 $controllerName = $parts[0] ?? 'auth';
 $method = $parts[1] ?? 'loginForm';
 
+// Monta o caminho do arquivo do controller (ex: AuthController.php)
 $controllerFile = __DIR__ . '/../app/Controllers/' . ucfirst($controllerName) . 'Controller.php';
 
 if (file_exists($controllerFile)) {

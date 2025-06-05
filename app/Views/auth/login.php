@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <?php include __DIR__ . '/../partials/menu.php'; ?>
     <h2>Login</h2>
-    <form method="POST" action="?route=login">
+    <form method="POST" action="?route=auth/login">
         <label>Email:</label><br>
         <input type="email" name="email" required><br>
         <label>Senha:</label><br>

@@ -62,4 +62,9 @@ class Chamado {
         $stmt->bindParam(":id", $id);
         return $stmt->execute();
     }
+
+    public function setConnection($conn) {
+        $this->conn = $conn;
+    }
+
 }

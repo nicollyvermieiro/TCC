@@ -14,22 +14,19 @@ class UsuariosControllerTest extends TestCase
 
     public function testListar()
     {
-        // Simula a chamada do método listar
-        ob_start(); // Captura a saída
+        ob_start();
         $this->controller->listar();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('<table', $output); // Supondo que listar exiba uma tabela HTML
+        $this->assertStringContainsString('<table', $output, "Listar deve gerar saída HTML contendo tabela.");
     }
-
-    // Como não temos views por enquanto, pode testar o fluxo simples dos métodos
 
     public function testSalvar()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
-            'nome' => 'Teste Controller',
-            'email' => 'testecont@example.com',
+            'nome' => 'Teste Controller ' . uniqid(),
+            'email' => 'testecont_' . uniqid() . '@example.com',
             'senha' => '123456',
             'cargo_id' => 1
         ];
@@ -38,6 +35,6 @@ class UsuariosControllerTest extends TestCase
         $this->controller->salvar();
         $output = ob_get_clean();
 
-        $this->assertEmpty($output); // Redireciona, então não deve ter saída
+        $this->assertEmpty($output, "Salvar deve redirecionar, não deve gerar saída.");
     }
 }

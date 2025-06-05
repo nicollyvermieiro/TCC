@@ -1,0 +1,1 @@
+{"version":1,"defects":{"LoginTest::testLoginValido":7,"LoginTest::testLoginInvalido":8,"UsuarioTest::testBuscarPorId":7,"UsuariosControllerTest::testSalvar":5},"times":{"LoginTest::testLoginValido":0.173,"UsuarioTest::testCriarUsuario":0.288,"UsuarioTest::testBuscarPorId":0.006,"UsuariosControllerTest::testListar":0.123,"UsuariosControllerTest::testSalvar":0.247}}
