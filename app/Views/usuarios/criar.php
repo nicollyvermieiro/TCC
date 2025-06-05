@@ -5,8 +5,9 @@
     <title>Criar Usuário</title>
 </head>
 <body>
+    <?php include __DIR__ . '/../partials/menu.php'; ?>
     <h1>Criar Usuário</h1>
-    <form method="post" action="?route=usuarios/criar">
+    <form method="post" action="?route=usuarios/salvar">
         <label>Nome: <input type="text" name="nome" required></label><br><br>
         <label>Email: <input type="email" name="email" required></label><br><br>
         <label>Senha: <input type="password" name="senha" required></label><br><br>

@@ -3,28 +3,32 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Recebe a rota da URL (ex: ?route=usuarios/listar)
-$route = isset($_GET['route']) ? $_GET['route'] : 'home/index';
+require_once __DIR__ . '/../app/helpers/session.php';
 
-// Divide a rota em controller e método
-list($controllerName, $method) = explode('/', $route);
+$route = $_GET['route'] ?? 'auth/loginForm';
 
-// Gera o caminho do arquivo do controller
+$parts = explode('/', $route);
+$controllerName = $parts[0] ?? 'auth';
+$method = $parts[1] ?? 'loginForm';
+
 $controllerFile = __DIR__ . '/../app/Controllers/' . ucfirst($controllerName) . 'Controller.php';
 
-// Verifica se o controller existe
 if (file_exists($controllerFile)) {
     require_once $controllerFile;
 
-    // Gera o nome da classe (ex: UsuariosController)
     $controllerClass = ucfirst($controllerName) . 'Controller';
 
     if (class_exists($controllerClass)) {
         $controller = new $controllerClass();
 
-        // Verifica se o método existe, senão chama um método padrão (ex: index)
+        // Verifica se o método existe e é público
         if (method_exists($controller, $method)) {
-            $controller->$method();
+            $refMethod = new ReflectionMethod($controllerClass, $method);
+            if ($refMethod->isPublic()) {
+                $controller->$method();
+            } else {
+                echo "Método '$method' não é acessível.";
+            }
         } else {
             echo "Método '$method' não encontrado no controller '$controllerClass'.";
         }
