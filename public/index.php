@@ -5,8 +5,21 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../app/helpers/session.php';
 
-// Pega a rota da URL, exemplo: ?route=auth/login
-$route = $_GET['route'] ?? 'auth/loginForm';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Rota padrão
+$route = $_GET['route'] ?? null;
+
+// Se não tem rota definida
+if (!$route) {
+    if (isset($_SESSION['usuario_id'])) {
+        $route = 'auth/dashboard';  // Usuário logado vai para dashboard
+    } else {
+        $route = 'auth/loginForm'; // Usuário não logado vai para login
+    }
+}
 
 // Separa controller e método
 $parts = explode('/', $route);
@@ -18,13 +31,9 @@ $controllerFile = __DIR__ . '/../app/Controllers/' . ucfirst($controllerName) . 
 
 if (file_exists($controllerFile)) {
     require_once $controllerFile;
-
     $controllerClass = ucfirst($controllerName) . 'Controller';
-
     if (class_exists($controllerClass)) {
         $controller = new $controllerClass();
-
-        // Verifica se o método existe e é público
         if (method_exists($controller, $method)) {
             $refMethod = new ReflectionMethod($controllerClass, $method);
             if ($refMethod->isPublic()) {

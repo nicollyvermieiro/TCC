@@ -9,7 +9,7 @@ class UsuarioTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->usuario = new Usuario();
+        $this->usuario = new Usuarios();
     }
 
     public function testCriarUsuario()

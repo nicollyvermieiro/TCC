@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../Models/Usuario.php';
+require_once __DIR__ . '/../Models/Usuarios.php';
 
 class AuthController
 {
@@ -12,32 +12,55 @@ class AuthController
     public function login()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'];
-            $senha = $_POST['senha'];
+            $email = $_POST['email'] ?? '';
+            $senha = $_POST['senha'] ?? '';
 
-            $usuarioModel = new Usuario();
-            $stmt = $usuarioModel->listarTodos();
+            $usuarioModel = new Usuarios();
+            $usuarioEncontrado = $usuarioModel->buscarPorEmail($email);
 
-            session_start();
-
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                if ($row['email'] === $email && password_verify($senha, $row['senha'])) {
-                    $_SESSION['usuario_id'] = $row['id'];
-                    $_SESSION['cargo_id'] = $row['cargo_id'];
-                    header("Location: ?route=usuarios/listar");
-                    exit;
+            if ($usuarioEncontrado && password_verify($senha, $usuarioEncontrado['senha'])) {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
                 }
+                $_SESSION['usuario_id'] = $usuarioEncontrado['id'];
+                $_SESSION['cargo_id'] = $usuarioEncontrado['cargo_id'];
+                $_SESSION['usuario_nome'] = $usuarioEncontrado['nome'];  // Para mostrar o nome no menu/dashboard
+                
+                header("Location: ?route=auth/dashboard");
+                exit;
+            } else {
+                setFlashMessage("Email ou senha inválidos.", "danger");
+                header("Location: ?route=auth/loginForm");
+                exit;
             }
-
-            echo "Email ou senha inválidos.";
+        } else {
+            // Requisição inválida, poderia redirecionar para o loginForm
+            header("Location: ?route=auth/loginForm");
+            exit;
         }
     }
 
     public function logout()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         session_destroy();
         header("Location: ?route=auth/loginForm");
         exit;
+    }
+
+    public function dashboard()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['usuario_id'])) {
+            header("Location: ?route=auth/loginForm");
+            exit;
+        }
+
+        require __DIR__ . '/../Views/dashboard/home.php';
     }
 }
