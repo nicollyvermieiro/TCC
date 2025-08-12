@@ -3,7 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Para facilitar, pega o cargo e nome do usuário logado
 $cargo_id = $_SESSION['cargo_id'] ?? null;
 $usuario_nome = $_SESSION['usuario_nome'] ?? '';
 

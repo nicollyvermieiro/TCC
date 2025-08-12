@@ -24,7 +24,7 @@ class AuthController
                 }
                 $_SESSION['usuario_id'] = $usuarioEncontrado['id'];
                 $_SESSION['cargo_id'] = $usuarioEncontrado['cargo_id'];
-                $_SESSION['usuario_nome'] = $usuarioEncontrado['nome'];  // Para mostrar o nome no menu/dashboard
+                $_SESSION['usuario_nome'] = $usuarioEncontrado['nome'];  
                 
                 header("Location: ?route=auth/dashboard");
                 exit;
@@ -34,7 +34,7 @@ class AuthController
                 exit;
             }
         } else {
-            // Requisição inválida, poderia redirecionar para o loginForm
+            // Requisição inválida, redirecionar para o loginForm
             header("Location: ?route=auth/loginForm");
             exit;
         }

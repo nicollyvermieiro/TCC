@@ -27,7 +27,6 @@ class Usuarios {
         $query = "INSERT INTO " . $this->table_name . " (nome, email, senha, cargo_id) VALUES (:nome, :email, :senha, :cargo_id)";
         $stmt = $this->conn->prepare($query);
 
-        // Se a senha já estiver hash, use ela diretamente, senão crie hash
         if (password_get_info($this->senha)['algo'] === 0) {
             $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
         } else {
@@ -40,7 +39,6 @@ class Usuarios {
         $stmt->bindParam(":cargo_id", $this->cargo_id);
 
         if ($stmt->execute()) {
-            // Captura o ID do usuário criado para usar nos testes e atualizações
             $this->id = $this->conn->lastInsertId();
             return true;
         }
@@ -94,7 +92,6 @@ class Usuarios {
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($usuario && password_verify($senha, $usuario['senha'])) {
-            // Se quiser, pode setar dados do usuário na instância aqui
             $this->id = $usuario['id'];
             $this->nome = $usuario['nome'];
             $this->email = $usuario['email'];

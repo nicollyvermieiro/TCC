@@ -36,7 +36,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     </a>
                 </div>
 
-                <!-- Espaço para adicionar outros cards futuramente, por exemplo: -->
+                <!-- Espaço para adicionar outros cards futuramente -->
 
                 <div class="col">
                     <a href="?route=chamados/listar" class="text-decoration-none disabled" tabindex="-1" aria-disabled="true">
