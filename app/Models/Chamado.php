@@ -5,32 +5,59 @@ class Chamado {
     private $conn;
     private $table = "chamado";
 
-    public $id, $descricao, $prioridade, $tipo_chamado_id, $usuario_id, $setor_id, $status, $data_criacao;
+    public $id;
+    public $descricao;
+    public $usuario_id;
+    public $usuario_temporario;
+    public $protocolo;
+    public $status;
+    public $tipo_id;
+    public $setor_id;
+    public $tecnico_id;
+    public $prioridade_id;
+    public $criado_em;
 
-    public function __construct() {
-        $this->conn = (new Database())->getConnection();
+    public function __construct($db = null) {
+        $this->conn = $db ?? (new Database())->getConnection();
     }
 
     public function criar() {
-        $query = "INSERT INTO {$this->table} (descricao, prioridade, tipo_chamado_id, usuario_id, setor_id, status, data_criacao) 
-                  VALUES (:descricao, :prioridade, :tipo_chamado_id, :usuario_id, :setor_id, :status, NOW())";
+        $query = "INSERT INTO {$this->table} 
+                  (descricao, usuario_id, usuario_temporario, protocolo, status, tipo_id, setor_id, tecnico_id, prioridade_id) 
+                  VALUES 
+                  (:descricao, :usuario_id, :usuario_temporario, :protocolo, :status, :tipo_id, :setor_id, :tecnico_id, :prioridade_id)";
+
         $stmt = $this->conn->prepare($query);
+
+        // Gera protocolo único (ex: 20250001)
+        $this->protocolo = $this->protocolo ?? date("Y") . strtoupper(uniqid());
+
         $stmt->bindParam(":descricao", $this->descricao);
-        $stmt->bindParam(":prioridade", $this->prioridade);
-        $stmt->bindParam(":tipo_chamado_id", $this->tipo_chamado_id);
         $stmt->bindParam(":usuario_id", $this->usuario_id);
-        $stmt->bindParam(":setor_id", $this->setor_id);
+        $stmt->bindParam(":usuario_temporario", $this->usuario_temporario);
+        $stmt->bindParam(":protocolo", $this->protocolo);
         $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":tipo_id", $this->tipo_id);
+        $stmt->bindParam(":setor_id", $this->setor_id);
+        $stmt->bindParam(":tecnico_id", $this->tecnico_id);
+        $stmt->bindParam(":prioridade_id", $this->prioridade_id);
+
         return $stmt->execute();
     }
 
     public function listarTodos() {
-        $query = "SELECT c.*, tc.nome AS tipo_nome, s.nome AS setor_nome, u.nome AS usuario_nome
+        $query = "SELECT c.*, 
+                         tc.nome AS tipo_nome, 
+                         s.nome AS setor_nome, 
+                         u.nome AS usuario_nome,
+                         p.nome AS prioridade_nome
                   FROM {$this->table} c
-                  LEFT JOIN tipo_chamado tc ON c.tipo_chamado_id = tc.id
-                  LEFT JOIN setor s ON c.setor_id = s.id
+                  JOIN tipo_chamado tc ON c.tipo_id = tc.id
+                  JOIN setor s ON c.setor_id = s.id
+                  JOIN prioridade_chamado p ON c.prioridade_id = p.id
                   LEFT JOIN usuario u ON c.usuario_id = u.id
-                  ORDER BY c.data_criacao DESC";
+                  ORDER BY c.criado_em DESC";
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -45,14 +72,25 @@ class Chamado {
     }
 
     public function atualizar() {
-        $query = "UPDATE {$this->table} SET descricao = :descricao, prioridade = :prioridade, tipo_chamado_id = :tipo_chamado_id, setor_id = :setor_id, status = :status WHERE id = :id";
+        $query = "UPDATE {$this->table} 
+                  SET descricao = :descricao,
+                      tipo_id = :tipo_id,
+                      setor_id = :setor_id,
+                      prioridade_id = :prioridade_id,
+                      status = :status,
+                      tecnico_id = :tecnico_id
+                  WHERE id = :id";
+
         $stmt = $this->conn->prepare($query);
+
         $stmt->bindParam(":descricao", $this->descricao);
-        $stmt->bindParam(":prioridade", $this->prioridade);
-        $stmt->bindParam(":tipo_chamado_id", $this->tipo_chamado_id);
+        $stmt->bindParam(":tipo_id", $this->tipo_id);
         $stmt->bindParam(":setor_id", $this->setor_id);
+        $stmt->bindParam(":prioridade_id", $this->prioridade_id);
         $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":tecnico_id", $this->tecnico_id);
         $stmt->bindParam(":id", $this->id);
+
         return $stmt->execute();
     }
 
@@ -66,5 +104,4 @@ class Chamado {
     public function setConnection($conn) {
         $this->conn = $conn;
     }
-
 }

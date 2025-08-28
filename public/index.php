@@ -1,5 +1,4 @@
 <?php
-// Ativa exibição de erros para desenvolvimento
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -11,22 +10,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Rota padrão
 $route = $_GET['route'] ?? null;
-
-// Se não tem rota definida
 if (!$route) {
-    if (isset($_SESSION['usuario_id'])) {
-        $route = 'auth/dashboard';  // Usuário logado vai para dashboard
-    } else {
-        $route = 'auth/loginForm'; // Usuário não logado vai para login
-    }
+    $route = 'home/index';
 }
 
 // Separa controller e método
 $parts = explode('/', $route);
-$controllerName = $parts[0] ?? 'auth';
-$method = $parts[1] ?? 'loginForm';
+$controllerName = $parts[0] ?? 'home';
+$method = $parts[1] ?? 'index';
 
-// Monta o caminho do arquivo do controller (ex: AuthController.php)
+// Caminho do controller
 $controllerFile = __DIR__ . '/../app/Controllers/' . ucfirst($controllerName) . 'Controller.php';
 
 if (file_exists($controllerFile)) {

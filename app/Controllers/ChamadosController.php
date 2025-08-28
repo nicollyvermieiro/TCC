@@ -1,12 +1,21 @@
 <?php
 require_once __DIR__ . '/../Models/Chamado.php';
+require_once __DIR__ . '/../Models/TipoChamado.php';
+require_once __DIR__ . '/../Models/Setor.php';
+require_once __DIR__ . '/../Models/Prioridade.php';
 
 class ChamadosController
 {
-    // Listar todos os chamados com dados relacionados (tipo, setor, usuário)
+    private $db;
+
+    public function __construct() {
+        $this->db = (new Database())->getConnection();
+    }
+
+    // Listar todos os chamados
     public function listar()
     {
-        $chamadoModel = new Chamado();
+        $chamadoModel = new Chamado($this->db);
         $chamados = $chamadoModel->listarTodos();
         require __DIR__ . '/../Views/chamados/listar.php';
     }
@@ -14,6 +23,14 @@ class ChamadosController
     // Exibir formulário para criar chamado
     public function criar()
     {
+        $tipoModel = new TipoChamado($this->db);
+        $setorModel = new Setor($this->db);
+        $prioridadeModel = new Prioridade($this->db);
+
+        $tipos = $tipoModel->listarTodos();
+        $setores = $setorModel->listarTodos();
+        $prioridades = $prioridadeModel->listarTodos();
+
         require __DIR__ . '/../Views/chamados/criar.php';
     }
 
@@ -21,22 +38,23 @@ class ChamadosController
     public function salvar()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $chamado = new Chamado();
-            $chamado->descricao = $_POST['descricao'] ?? '';
-            $chamado->prioridade = $_POST['prioridade'] ?? '';
-            $chamado->tipo_chamado_id = $_POST['tipo_chamado_id'] ?? null;
-            $chamado->usuario_id = $_SESSION['usuario_id'] ?? null;  // Usuário logado
-            $chamado->setor_id = $_POST['setor_id'] ?? null;
-            $chamado->status = 'Aberto';
+            $chamado = new Chamado($this->db);
+            $chamado->descricao     = $_POST['descricao'] ?? '';
+            $chamado->prioridade_id = $_POST['prioridade_id'] ?? null;
+            $chamado->tipo_id       = $_POST['tipo_id'] ?? null;
+            $chamado->usuario_id    = $_SESSION['usuario_id'] ?? null;
+            $chamado->setor_id      = $_POST['setor_id'] ?? null;
+            $chamado->status        = 'Aberto';
 
             if ($chamado->criar()) {
+                setFlashMessage("Chamado criado com sucesso.", "success");
                 header('Location: ?route=chamados/listar');
                 exit;
             } else {
-                echo "Erro ao salvar chamado.";
+                setFlashMessage("Erro ao criar chamado.", "danger");
+                header('Location: ?route=chamados/criar');
+                exit;
             }
-        } else {
-            echo "Requisição inválida.";
         }
     }
 
@@ -45,35 +63,53 @@ class ChamadosController
     {
         $id = $_GET['id'] ?? null;
 
-        if ($id) {
-            $chamado = new Chamado();
-            $dados = $chamado->buscarPorId($id);
-
-            if ($dados) {
-                require __DIR__ . '/../Views/chamados/editar.php';
-            } else {
-                echo "Chamado não encontrado.";
-            }
+        if (!$id) {
+            setFlashMessage("Chamado não encontrado.", "warning");
+            header("Location: ?route=chamados/listar");
+            exit;
         }
+
+        $chamadoModel = new Chamado($this->db);
+        $dados = $chamadoModel->buscarPorId($id);
+
+        if (!$dados) {
+            setFlashMessage("Chamado não encontrado.", "warning");
+            header("Location: ?route=chamados/listar");
+            exit;
+        }
+
+        // Buscar opções para selects
+        $tipoModel = new TipoChamado($this->db);
+        $setorModel = new Setor($this->db);
+        $prioridadeModel = new Prioridade($this->db);
+
+        $tipos = $tipoModel->listarTodos();
+        $setores = $setorModel->listarTodos();
+        $prioridades = $prioridadeModel->listarTodos();
+
+        require __DIR__ . '/../Views/chamados/editar.php';
     }
 
     // Atualizar chamado
     public function atualizar()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $chamado = new Chamado();
-            $chamado->id = $_POST['id'];
-            $chamado->descricao = $_POST['descricao'];
-            $chamado->prioridade = $_POST['prioridade'];
-            $chamado->tipo_chamado_id = $_POST['tipo_chamado_id'];
-            $chamado->setor_id = $_POST['setor_id'];
-            $chamado->status = $_POST['status'];
+            $chamado = new Chamado($this->db);
+            $chamado->id            = $_POST['id'];
+            $chamado->descricao     = $_POST['descricao'];
+            $chamado->tipo_id       = $_POST['tipo_id'];
+            $chamado->setor_id      = $_POST['setor_id'];
+            $chamado->prioridade_id = $_POST['prioridade_id'];
+            $chamado->status        = $_POST['status'];
 
             if ($chamado->atualizar()) {
+                setFlashMessage("Chamado atualizado com sucesso.", "success");
                 header('Location: ?route=chamados/listar');
                 exit;
             } else {
-                echo "Erro ao atualizar chamado.";
+                setFlashMessage("Erro ao atualizar chamado.", "danger");
+                header("Location: ?route=chamados/editar&id={$chamado->id}");
+                exit;
             }
         }
     }
@@ -84,12 +120,15 @@ class ChamadosController
         $id = $_GET['id'] ?? null;
 
         if ($id) {
-            $chamado = new Chamado();
+            $chamado = new Chamado($this->db);
             if ($chamado->excluir($id)) {
+                setFlashMessage("Chamado excluído com sucesso.", "success");
                 header('Location: ?route=chamados/listar');
                 exit;
             } else {
-                echo "Erro ao excluir chamado.";
+                setFlashMessage("Erro ao excluir chamado.", "danger");
+                header('Location: ?route=chamados/listar');
+                exit;
             }
         }
     }

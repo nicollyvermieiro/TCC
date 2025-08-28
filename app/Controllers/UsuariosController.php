@@ -1,167 +1,151 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Models/Usuarios.php';
+require_once __DIR__ . '/../helpers/session.php'; // Para setFlashMessage() e getFlashMessage()
 
 class UsuariosController
 {
+    private $conn;
+
+    public function __construct() {
+        $this->conn = (new Database())->getConnection();
+    }
+
+    // Verifica se usuário logado é admin
+    private function verificarAdmin() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
+            setFlashMessage("Acesso negado. Apenas administradores podem acessar.", "danger");
+            header("Location: ?route=auth/dashboard");
+            exit;
+        }
+    }
+
+    // Verifica se existe algum admin
     public function existeAdministrador() {
-        $database = new Database();
-        $conn = $database->getConnection();
-
         $query = "SELECT COUNT(*) FROM usuario WHERE cargo_id = 1";
-        $stmt = $conn->prepare($query);
+        $stmt = $this->conn->prepare($query);
         $stmt->execute();
-
         $count = $stmt->fetchColumn();
-
         return $count > 0;
     }
 
-
-    public function listar()
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['usuario_id'])) {
-            header("Location: ?route=auth/loginForm");
-            exit;
-        }
-
-        if ($_SESSION['cargo_id'] != 1) {
-            echo "Acesso negado. Você não tem permissão para acessar esta página.";
-            exit;
-        }
-
-
-        $database = new Database();
-        $conn = $database->getConnection();
+    // Listar usuários
+    public function listar() {
+        $this->verificarAdmin();
 
         $query = "SELECT u.id, u.nome, u.email, c.nome AS cargo 
                   FROM usuario u
                   JOIN cargo c ON u.cargo_id = c.id";
-
-        $stmt = $conn->prepare($query);
+        $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         require __DIR__ . '/../Views/usuarios/listar.php';
     }
 
-    // Exibir formulário de criação de usuário
-   public function criar()
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // Verifica se já existe administrador cadastrado
+    // Formulário de criação
+    public function criar() {
+        // Se não existe admin, mostra criar primeiro admin sem exigir login
         if (!$this->existeAdministrador()) {
-            // Exibe o formulário para cadastrar o primeiro admin, SEM exigir login
             require __DIR__ . '/../Views/usuarios/criar_primeiro_admin.php';
-            exit; // para não continuar o fluxo normal
-        }
-
-        // A partir daqui, exige login
-        if (!isset($_SESSION['usuario_id'])) {
-            header("Location: ?route=auth/loginForm");
             exit;
         }
 
-        // Exige também que só admin possa criar usuário
-        if ($_SESSION['cargo_id'] != 1) {
-            echo "Acesso negado. Você não tem permissão para acessar esta página.";
-            exit;
-        }
-
-        $database = new Database();
-        $conn = $database->getConnection();
+        $this->verificarAdmin();
 
         // Buscar cargos
         $query = "SELECT id, nome FROM cargo ORDER BY nome ASC";
-        $stmt = $conn->prepare($query);
+        $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $cargos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         require __DIR__ . '/../Views/usuarios/criar.php';
     }
 
-    public function salvarPrimeiroAdmin()
-    {
+    // Salvar primeiro admin
+    public function salvarPrimeiroAdmin() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = new Usuarios();
             $usuario->nome = $_POST['nome'] ?? '';
             $usuario->email = $_POST['email'] ?? '';
-            $senhaDigitada = $_POST['senha'] ?? '';
-            $usuario->senha = password_hash($senhaDigitada, PASSWORD_DEFAULT);
-            $usuario->cargo_id = 1; // Forçando admin
+            $usuario->senha = password_hash($_POST['senha'] ?? '', PASSWORD_DEFAULT);
+            $usuario->cargo_id = 1;
 
             if ($usuario->criar()) {
+                setFlashMessage("Administrador criado com sucesso.", "success");
                 header('Location: ?route=auth/loginForm');
                 exit;
             } else {
-                echo "Erro ao salvar o administrador.";
+                setFlashMessage("Erro ao criar administrador.", "danger");
+                header('Location: ?route=usuarios/criar');
+                exit;
             }
         } else {
-            echo "Requisição inválida.";
+            setFlashMessage("Requisição inválida.", "warning");
+            header('Location: ?route=usuarios/criar');
+            exit;
         }
     }
 
+    // Salvar usuário normal
+    public function salvar() {
+        $this->verificarAdmin();
 
-    public function salvar()
-    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = new Usuarios();
             $usuario->nome = $_POST['nome'] ?? '';
             $usuario->email = $_POST['email'] ?? '';
-            $senhaDigitada = $_POST['senha'] ?? '';
-            $usuario->senha = password_hash($senhaDigitada, PASSWORD_DEFAULT);
+            $usuario->senha = password_hash($_POST['senha'] ?? '', PASSWORD_DEFAULT);
             $usuario->cargo_id = $_POST['cargo_id'] ?? null;
 
             if ($usuario->criar()) {
+                setFlashMessage("Usuário criado com sucesso.", "success");
                 header('Location: ?route=usuarios/listar');
                 exit;
             } else {
-                echo "Erro ao salvar usuário.";
+                setFlashMessage("Erro ao criar usuário.", "danger");
+                header('Location: ?route=usuarios/criar');
+                exit;
             }
         } else {
-            echo "Requisição inválida.";
+            setFlashMessage("Requisição inválida.", "warning");
+            header('Location: ?route=usuarios/listar');
+            exit;
         }
     }
 
-    public function editar() 
-    {
-        $id = $_GET['id'] ?? null;
+    // Editar usuário
+    public function editar() {
+        $this->verificarAdmin();
 
+        $id = $_GET['id'] ?? null;
         if (!$id) {
-            echo "ID do usuário não fornecido.";
-            return;
+            setFlashMessage("ID do usuário não fornecido.", "warning");
+            header('Location: ?route=usuarios/listar');
+            exit;
         }
 
-        $database = new Database();
-        $conn = $database->getConnection();
-
-        // Busca dados do usuário
         $usuarioModel = new Usuarios();
         $dados = $usuarioModel->buscarPorId($id);
-
         if (!$dados) {
-            echo "Usuário não encontrado.";
-            return;
+            setFlashMessage("Usuário não encontrado.", "warning");
+            header('Location: ?route=usuarios/listar');
+            exit;
         }
 
-        // Busca cargos
         $query = "SELECT id, nome FROM cargo ORDER BY nome ASC";
-        $stmt = $conn->prepare($query);
+        $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $cargos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         require __DIR__ . '/../Views/usuarios/editar.php';
     }
 
-    public function atualizar()
-     {
+    // Atualizar usuário
+    public function atualizar() {
+        $this->verificarAdmin();
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usuario = new Usuarios();
             $usuario->id = $_POST['id'];
@@ -170,33 +154,45 @@ class UsuariosController
             $usuario->cargo_id = $_POST['cargo_id'];
 
             if (!empty($_POST['senha'])) {
-                $usuario->senha = $_POST['senha'];
+                $usuario->senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
             }
 
             if ($usuario->atualizar()) {
+                setFlashMessage("Usuário atualizado com sucesso.", "success");
                 header("Location: ?route=usuarios/listar");
                 exit;
             } else {
-                echo "Erro ao atualizar.";
+                setFlashMessage("Erro ao atualizar usuário.", "danger");
+                header("Location: ?route=usuarios/editar&id={$usuario->id}");
+                exit;
             }
+        } else {
+            setFlashMessage("Requisição inválida.", "warning");
+            header('Location: ?route=usuarios/listar');
+            exit;
         }
     }
 
+    // Excluir usuário
+    public function excluir() {
+        $this->verificarAdmin();
 
-    // (Opcional) Excluir usuário
-    public function excluir()
-    {
         $id = $_GET['id'] ?? null;
+        if (!$id) {
+            setFlashMessage("ID do usuário não fornecido.", "warning");
+            header('Location: ?route=usuarios/listar');
+            exit;
+        }
 
-        if ($id) {
-            $usuario = new Usuarios();
-            if ($usuario->excluir($id)) {
-                header("Location: ?route=usuarios/listar");
-                exit;
-            } else {
-                echo "Erro ao excluir.";
-            }
+        $usuario = new Usuarios();
+        if ($usuario->excluir($id)) {
+            setFlashMessage("Usuário excluído com sucesso.", "success");
+            header('Location: ?route=usuarios/listar');
+            exit;
+        } else {
+            setFlashMessage("Erro ao excluir usuário. Verifique dependências.", "danger");
+            header('Location: ?route=usuarios/listar');
+            exit;
         }
     }
-
 }
