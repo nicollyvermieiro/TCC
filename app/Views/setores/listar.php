@@ -20,6 +20,9 @@
     <?php endif; ?>
 
     <div class="container mt-4">
+                <!-- Botão voltar -->
+        <button class="btn btn-secondary mb-3" onclick="window.history.back();">←</button>
+
         <h1 class="mb-4">Lista de Setores</h1>
 
         <a href="?route=setores/criar" class="btn btn-primary mb-3">+ Novo Setor</a>

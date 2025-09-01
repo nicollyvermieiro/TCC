@@ -22,6 +22,9 @@
     <?php endif; ?>
 
     <div class="container mt-5">
+        <!-- Botão voltar -->
+        <button class="btn btn-secondary mb-3" onclick="window.history.back();">←</button>
+        
         <div class="card shadow-sm">
             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Usuários Cadastrados</h4>

@@ -132,4 +132,19 @@ class ChamadosController
             }
         }
     }
+
+    // Tela intermediária de Gerenciar Chamados
+    public function gerenciar()
+    {
+        // Verifica se é admin
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
+            setFlashMessage("Acesso negado. Área restrita a administradores.", "danger");
+            header("Location: ?route=auth/dashboard");
+            exit;
+        }
+
+        require __DIR__ . '/../Views/chamados/gerenciar.php';
+    }
+
 }

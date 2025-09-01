@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Models/Prioridade.php';
 require_once __DIR__ . '/../helpers/session.php';
 
-class PrioridadeController
+class PrioridadesController
 {
     private $conn;
 

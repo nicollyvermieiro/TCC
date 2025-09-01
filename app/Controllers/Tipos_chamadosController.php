@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Models/TipoChamado.php';
 require_once __DIR__ . '/../helpers/session.php';
 
-class TiposChamadosController
+class Tipos_chamadosController
 {
     private $conn;
 
@@ -23,7 +23,7 @@ class TiposChamadosController
 
     public function listar() {
         $this->verificarAdmin();
-        $tipoChamado = new TipoChamado();
+        $tipoChamado = new TipoChamado($this->conn);
         $tipos = $tipoChamado->listarTodos();
         require __DIR__ . '/../Views/tipos_chamados/listar.php';
     }
@@ -37,8 +37,9 @@ class TiposChamadosController
         $this->verificarAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $tipo = new TipoChamado();
+            $tipo = new TipoChamado($this->conn);
             $tipo->nome = trim($_POST['nome'] ?? '');
+            $tipo->descricao = trim($_POST['descricao'] ?? '');
 
             if (empty($tipo->nome)) {
                 setFlashMessage("Nome obrigatório.", "warning");
@@ -68,7 +69,7 @@ class TiposChamadosController
             exit;
         }
 
-        $tipo = new TipoChamado();
+        $tipo = new TipoChamado($this->conn);
         $dados = $tipo->buscarPorId($id);
 
         if (!$dados) {
@@ -84,9 +85,10 @@ class TiposChamadosController
         $this->verificarAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $tipo = new TipoChamado();
+            $tipo = new TipoChamado($this->conn);
             $tipo->id = $_POST['id'] ?? null;
             $tipo->nome = trim($_POST['nome'] ?? '');
+            $tipo->descricao = trim($_POST['descricao'] ?? '');
 
             if (empty($tipo->id) || empty($tipo->nome)) {
                 setFlashMessage("Dados inválidos.", "warning");
@@ -116,7 +118,7 @@ class TiposChamadosController
             exit;
         }
 
-        $tipo = new TipoChamado();
+        $tipo = new TipoChamado($this->conn);
         if ($tipo->excluir($id)) {
             setFlashMessage("Tipo de chamado excluído.", "success");
         } else {
