@@ -10,10 +10,10 @@ class Usuarios {
     public $email;
     public $senha;
     public $cargo_id;
+    public $setor_id;
 
-    public function __construct() {
-        $database = new Database();
-        $this->conn = $database->getConnection();
+    public function __construct($db = null) {
+        $this->conn = $db ?? (new Database())->getConnection();
     }
 
     public function listarTodos() {
@@ -23,27 +23,46 @@ class Usuarios {
         return $stmt;
     }
 
-    public function criar() {
-        $query = "INSERT INTO " . $this->table_name . " (nome, email, senha, cargo_id) VALUES (:nome, :email, :senha, :cargo_id)";
+     public function listarPorCargo($cargoNome) {
+    $sql = "SELECT u.id, u.nome 
+            FROM usuario u
+            JOIN cargo c ON u.cargo_id = c.id
+            WHERE c.nome = :cargoNome";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute(['cargoNome' => $cargoNome]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+     public function criar() {
+        $query = "INSERT INTO " . $this->table_name . " 
+                  (nome, email, senha, cargo_id, setor_id) 
+                  VALUES (:nome, :email, :senha, :cargo_id, :setor_id)";
         $stmt = $this->conn->prepare($query);
 
-        if (password_get_info($this->senha)['algo'] === 0) {
-            $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
-        } else {
-            $senhaHash = $this->senha;
-        }
+        $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
+
 
         $stmt->bindParam(":nome", $this->nome);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":senha", $senhaHash);
         $stmt->bindParam(":cargo_id", $this->cargo_id);
+        $stmt->bindParam(":setor_id", $this->setor_id); // NOVO
 
-        if ($stmt->execute()) {
+        try {
+            $stmt->execute();
             $this->id = $this->conn->lastInsertId();
             return true;
+        } catch (PDOException $e) {
+            // Verifica se é erro de chave única (email duplicado)
+            if ($e->getCode() == '23505') { // PostgreSQL: unique_violation
+                throw new Exception("O email '{$this->email}' já está cadastrado.");
+            } else {
+                throw new Exception("Erro ao criar usuário: " . $e->getMessage());
+            }
         }
-        return false;
     }
+
 
     public function buscarPorId($id) {
         $query = "SELECT * FROM " . $this->table_name . " WHERE id = :id";
@@ -53,29 +72,30 @@ class Usuarios {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function atualizar() {
-        $query = "UPDATE " . $this->table_name . " SET nome = :nome, email = :email, cargo_id = :cargo_id";
-        
-        if (!empty($this->senha)) {
-            $query .= ", senha = :senha";
-        }
+public function atualizar() {
+    $query = "UPDATE usuario SET nome = :nome, email = :email, cargo_id = :cargo_id, setor_id = :setor_id";
 
-        $query .= " WHERE id = :id";
-
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':nome', $this->nome);
-        $stmt->bindParam(':email', $this->email);
-        $stmt->bindParam(':cargo_id', $this->cargo_id);
-        $stmt->bindParam(':id', $this->id);
-
-        if (!empty($this->senha)) {
-            $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
-            $stmt->bindParam(':senha', $senhaHash);
-        }
-
-        return $stmt->execute();
+    if (!empty($this->senha)) {
+        $query .= ", senha = :senha";
     }
+
+    $query .= " WHERE id = :id";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':nome', $this->nome);
+    $stmt->bindParam(':email', $this->email);
+    $stmt->bindParam(':cargo_id', $this->cargo_id);
+    $stmt->bindParam(':setor_id', $this->setor_id);
+    $stmt->bindParam(':id', $this->id);
+
+    if (!empty($this->senha)) {
+        $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
+        $stmt->bindParam(':senha', $senhaHash);
+    }
+
+    return $stmt->execute();
+}
+
 
     public function excluir($id) {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";

@@ -18,6 +18,27 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
+          .btn-voltar {
+        background-color: #0d6efd;
+        color: #fff;
+        border: none;
+        padding: 6px 14px;
+        font-size: 0.9rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transition: all 0.2s ease-in-out;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-voltar:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        cursor: pointer;
+    }
+
         body {
             background-color: #f8f9fa;
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -63,11 +84,12 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
     <?php include __DIR__ . '/../partials/menu.php'; ?>
 
     <div class="container mt-5">
-        <button class="btn btn-outline-secondary mb-4" onclick="window.history.back();">
-            <i class="bi bi-arrow-left"></i> Voltar
+     <div class="d-flex align-items-center mb-3">
+        <button class="btn-voltar me-3" onclick="window.history.back();">
+            <i class="bi bi-arrow-left"></i> 
         </button>
-
-        <h2 class="mb-3">Gerenciar Chamados</h2>
+        <h2 class="mb-0">Gerenciar Chamados</h2>
+    </div>
         <p class="text-muted">Escolha uma das opções abaixo para continuar:</p>
 
         <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
@@ -75,19 +97,19 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
                 <a href="?route=chamados/listar" class="text-decoration-none">
                     <div class="card h-100 text-center p-3">
                         <div class="icon-circle"><i class="bi bi-clipboard-check"></i></div>
-                        <h5 class="card-title">Ver Chamados</h5>
-                        <p class="card-text">Visualizar, editar e excluir chamados existentes.</p>
+                        <h5 class="card-title">Complementar Chamados</h5>
+                        <p class="card-text">Visualizar, complementar, editar e excluir chamados.</p>
                     </div>
                 </a>
             </div>
 
             <div class="col">
-                <a href="?route=chamados/criar" class="text-decoration-none">
+                <a href="?route=chamados/listar" class="text-decoration-none">
                     <div class="card h-100 text-center p-3">
-                        <div class="icon-circle"><i class="bi bi-plus-circle"></i></div>
-                        <h5 class="card-title">Criar Chamado</h5>
-                        <p class="card-text">Registrar um novo chamado no sistema.</p>
-                    </div>
+                        <div class="icon-circle"><i class="bi bi-clock-history"></i></div>
+                        <h5 class="card-title">Histórico de Chamados</h5>
+                        <p class="card-text">Consulte os chamados já concluídos.</p>
+                    </div> PUXAR SÓ OS CONCLUÍDOS->>>>>>>>>>>>>>
                 </a>
             </div>
 

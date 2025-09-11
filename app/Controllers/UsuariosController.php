@@ -60,6 +60,12 @@ class UsuariosController
         $stmt->execute();
         $cargos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Buscar setores
+        $query2 = "SELECT id, nome FROM setor ORDER BY nome ASC";
+        $stmt2 = $this->conn->prepare($query2);
+        $stmt2->execute();
+        $setores = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
         require __DIR__ . '/../Views/usuarios/criar.php';
     }
 
@@ -90,73 +96,111 @@ class UsuariosController
 
     // Salvar usuário normal
     public function salvar() {
-        $this->verificarAdmin();
+    $this->verificarAdmin();
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $usuario = new Usuarios();
-            $usuario->nome = $_POST['nome'] ?? '';
-            $usuario->email = $_POST['email'] ?? '';
-            $usuario->senha = password_hash($_POST['senha'] ?? '', PASSWORD_DEFAULT);
-            $usuario->cargo_id = $_POST['cargo_id'] ?? null;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $usuario = new Usuarios();
+        $usuario->nome = $_POST['nome'] ?? '';
+        $usuario->email = $_POST['email'] ?? '';
+        $usuario->senha = $_POST['senha'] ?? '';
+        $usuario->cargo_id = $_POST['cargo_id'] ?? null;
 
+        // Buscar nome do cargo no DB
+        $stmt = $this->conn->prepare("SELECT nome FROM cargo WHERE id = :id");
+        $stmt->execute(['id' => $usuario->cargo_id]);
+        $cargo_nome = strtolower($stmt->fetchColumn() ?? '');
+
+        // Só define setor se for técnico
+        if ($cargo_nome === 'técnico') {
+            $usuario->setor_id = $_POST['setor_id'] ?? null;
+        } else {
+            $usuario->setor_id = null;
+        }
+
+        try {
             if ($usuario->criar()) {
                 setFlashMessage("Usuário criado com sucesso.", "success");
                 header('Location: ?route=usuarios/listar');
                 exit;
-            } else {
-                setFlashMessage("Erro ao criar usuário.", "danger");
-                header('Location: ?route=usuarios/criar');
-                exit;
             }
-        } else {
-            setFlashMessage("Requisição inválida.", "warning");
-            header('Location: ?route=usuarios/listar');
+        } catch (Exception $e) {
+            setFlashMessage($e->getMessage(), "warning");
+            header('Location: ?route=usuarios/criar');
             exit;
         }
+    } else {
+        setFlashMessage("Requisição inválida.", "warning");
+        header('Location: ?route=usuarios/listar');
+        exit;
     }
+}
+
+
 
     // Editar usuário
     public function editar() {
-        $this->verificarAdmin();
+    $this->verificarAdmin();
 
-        $id = $_GET['id'] ?? null;
-        if (!$id) {
-            setFlashMessage("ID do usuário não fornecido.", "warning");
-            header('Location: ?route=usuarios/listar');
-            exit;
-        }
-
-        $usuarioModel = new Usuarios();
-        $dados = $usuarioModel->buscarPorId($id);
-        if (!$dados) {
-            setFlashMessage("Usuário não encontrado.", "warning");
-            header('Location: ?route=usuarios/listar');
-            exit;
-        }
-
-        $query = "SELECT id, nome FROM cargo ORDER BY nome ASC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        $cargos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        require __DIR__ . '/../Views/usuarios/editar.php';
+    $id = $_GET['id'] ?? null;
+    if (!$id) {
+        setFlashMessage("ID do usuário não fornecido.", "warning");
+        header('Location: ?route=usuarios/listar');
+        exit;
     }
+
+    $query = "SELECT u.*, s.nome AS setor_nome
+              FROM usuario u
+              LEFT JOIN setor s ON u.setor_id = s.id
+              WHERE u.id = :id";
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute(['id' => $id]);
+    $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$dados) {
+        setFlashMessage("Usuário não encontrado.", "warning");
+        header('Location: ?route=usuarios/listar');
+        exit;
+    }
+
+    $query2 = "SELECT id, nome FROM cargo ORDER BY nome ASC";
+    $stmt2 = $this->conn->prepare($query2);
+    $stmt2->execute();
+    $cargos = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    $query3 = "SELECT id, nome FROM setor ORDER BY nome ASC";
+    $stmt3 = $this->conn->prepare($query3);
+    $stmt3->execute();
+    $setores = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
+    require __DIR__ . '/../Views/usuarios/editar.php';
+}
+
 
     // Atualizar usuário
     public function atualizar() {
-        $this->verificarAdmin();
+    $this->verificarAdmin();
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $usuario = new Usuarios();
-            $usuario->id = $_POST['id'];
-            $usuario->nome = $_POST['nome'];
-            $usuario->email = $_POST['email'];
-            $usuario->cargo_id = $_POST['cargo_id'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $usuario = new Usuarios();
+        $usuario->id = $_POST['id'] ?? null;
+        $usuario->nome = $_POST['nome'] ?? '';
+        $usuario->email = $_POST['email'] ?? '';
+        $usuario->cargo_id = $_POST['cargo_id'] ?? null;
+        $usuario->senha = !empty($_POST['senha']) ? $_POST['senha'] : null;
 
-            if (!empty($_POST['senha'])) {
-                $usuario->senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
-            }
+        // Buscar o nome do cargo no banco para definir setor
+        $stmt = $this->conn->prepare("SELECT nome FROM cargo WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => $usuario->cargo_id]);
+        $cargo_nome = $stmt->fetchColumn() ?? '';
 
+        // Definir setor apenas se for técnico
+        if (stripos(trim($cargo_nome), 'técnico') !== false) {
+            $usuario->setor_id = !empty($_POST['setor_id']) ? $_POST['setor_id'] : null;
+        } else {
+            $usuario->setor_id = null;
+        }
+
+        try {
             if ($usuario->atualizar()) {
                 setFlashMessage("Usuário atualizado com sucesso.", "success");
                 header("Location: ?route=usuarios/listar");
@@ -166,12 +210,18 @@ class UsuariosController
                 header("Location: ?route=usuarios/editar&id={$usuario->id}");
                 exit;
             }
-        } else {
-            setFlashMessage("Requisição inválida.", "warning");
-            header('Location: ?route=usuarios/listar');
+        } catch (Exception $e) {
+            setFlashMessage("Erro ao atualizar usuário: " . $e->getMessage(), "danger");
+            header("Location: ?route=usuarios/editar&id={$usuario->id}");
             exit;
         }
+
+    } else {
+        setFlashMessage("Requisição inválida.", "warning");
+        header('Location: ?route=usuarios/listar');
+        exit;
     }
+}
 
     // Excluir usuário
     public function excluir() {

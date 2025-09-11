@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Editar Chamado</title>
+    <title>Complementar Chamado</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
@@ -19,22 +19,27 @@
     <?php endif; ?>
 
     <div class="container mt-4">
-        <h2>Editar Chamado</h2>
+        <h2>Complementar Chamado</h2>
 
-        <form method="POST" action="?route=chamados/atualizar">
+        <form method="POST" action="?route=chamados/salvarComplemento">
             <input type="hidden" name="id" value="<?= $dados['id'] ?>">
 
             <div class="mb-3">
-                <label for="descricao" class="form-label">Descrição</label>
-                <textarea name="descricao" id="descricao" class="form-control" rows="3" required><?= htmlspecialchars($dados['descricao']) ?></textarea>
+                <label for="descricao" class="form-label">Descrição do Problema</label>
+                <textarea name="descricao" id="descricao" class="form-control" rows="4" readonly><?= htmlspecialchars($dados['descricao']) ?></textarea>
             </div>
 
             <div class="mb-3">
-                <label for="tipo_chamado_id" class="form-label">Categoria do Chamado</label>
-                <select name="tipo_chamado_id" id="tipo_chamado_id" class="form-select" required>
+                <label for="localizacao" class="form-label">Localização</label>
+                <input type="text" name="localizacao" id="localizacao" class="form-control" value="<?= htmlspecialchars($dados['localizacao']) ?>" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label for="tipo_id" class="form-label">Categoria do Chamado</label>
+                <select name="tipo_id" id="tipo_id" class="form-select" required>
                     <option value="">Selecione...</option>
                     <?php foreach ($tipos as $tipo): ?>
-                        <option value="<?= $tipo['id'] ?>" <?= $dados['tipo_chamado_id'] == $tipo['id'] ? 'selected' : '' ?>>
+                        <option value="<?= $tipo['id'] ?>" <?= $dados['tipo_id'] == $tipo['id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($tipo['nome']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -54,11 +59,11 @@
             </div>
 
             <div class="mb-3">
-                <label for="prioridade" class="form-label">Prioridade</label>
-                <select name="prioridade" id="prioridade" class="form-select" required>
+                <label for="prioridade_id" class="form-label">Prioridade</label>
+                <select name="prioridade_id" id="prioridade_id" class="form-select" required>
                     <option value="">Selecione...</option>
                     <?php foreach ($prioridades as $prioridade): ?>
-                        <option value="<?= $prioridade['id'] ?>" <?= $dados['prioridade'] == $prioridade['id'] ? 'selected' : '' ?>>
+                        <option value="<?= $prioridade['id'] ?>" <?= $dados['prioridade_id'] == $prioridade['id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($prioridade['nome']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -66,15 +71,19 @@
             </div>
 
             <div class="mb-3">
-                <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-select" required>
-                    <option value="Aberto" <?= $dados['status'] == 'Aberto' ? 'selected' : '' ?>>Aberto</option>
-                    <option value="Em Andamento" <?= $dados['status'] == 'Em Andamento' ? 'selected' : '' ?>>Em Andamento</option>
-                    <option value="Concluído" <?= $dados['status'] == 'Concluído' ? 'selected' : '' ?>>Concluído</option>
+                <label for="tecnico_id" class="form-label">Técnico Responsável</label>
+                <select name="tecnico_id" id="tecnico_id" class="form-select" required>
+                    <option value="">Selecione um técnico...</option>
+                    <?php foreach ($tecnicos as $tecnico): ?>
+                        <option value="<?= $tecnico['id'] ?>" <?= $dados['tecnico_id'] == $tecnico['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($tecnico['nome']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary">Atualizar</button>
+
+            <button type="submit" class="btn btn-success">Salvar Complemento</button>
             <a href="?route=chamados/listar" class="btn btn-secondary ms-2">Cancelar</a>
         </form>
     </div>
