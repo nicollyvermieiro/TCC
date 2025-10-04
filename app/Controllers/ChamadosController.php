@@ -15,25 +15,52 @@ class ChamadosController
     }
 
     // ========================
-    // USUÁRIO COMUM
+    // FORMULÁRIO DE CRIAÇÃO
     // ========================
     public function criarUsuario() {
+        $isGuest = isset($_GET['guest']) && $_GET['guest'] == 1;
+
+        if($isGuest){
+            // Identificação temporária para visitante via QR
+            $_SESSION['is_guest'] = true;
+            $usuarioNome = "Visitante";
+        } else {
+            $_SESSION['is_guest'] = false;
+            $usuarioNome = $_SESSION['usuario']['nome'] ?? 'Usuário';
+        }
+
         require __DIR__ . '/../Views/chamados/criar_usuario.php';
     }
 
-   public function salvarUsuario() {
+    // ========================
+    // SALVAR CHAMADO
+    // ========================
+    public function salvarUsuario() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $chamado = new Chamado($this->db);
+
         $chamado->descricao   = $_POST['descricao'] ?? '';
         $chamado->localizacao = $_POST['localizacao'] ?? '';
-        $chamado->usuario_id  = $_SESSION['usuario_id'] ?? null;
-        $chamado->usuario_temporario = ($_SESSION['usuario_id'] ?? null) ? null : ($_POST['nome'] ?? 'Visitante');
         $chamado->status      = 'Aguardando Atendimento';
+
+        if (!empty($_SESSION['usuario_id']) && !$_SESSION['is_guest']) {
+            // Usuário logado
+            $chamado->usuario_id = $_SESSION['usuario_id'];
+            $chamado->usuario_temporario = null;
+            $chamado->origem = 'sistema';
+        } else {
+            // Visitante via QR Code
+            $chamado->usuario_id = null;
+            $chamado->usuario_temporario = $_POST['nome'] ?? 'Visitante';
+            $chamado->origem = 'qrcode';
+        }
 
         $chamado_id = $chamado->criarBasico();
 
         if ($chamado_id) {
-            // Upload de anexo
+            // ==========================
+            // UPLOAD DE ANEXO
+            // ==========================
             if (!empty($_FILES['anexo']['name'])) {
                 $arquivoNome = time() . "_" . basename($_FILES['anexo']['name']);
                 $caminho = __DIR__ . '/../../public/uploads/' . $arquivoNome;
@@ -41,16 +68,23 @@ class ChamadosController
                 if (move_uploaded_file($_FILES['anexo']['tmp_name'], $caminho)) {
                     $anexoModel = new AnexoChamado();
                     $caminhoRelativo = 'uploads/' . $arquivoNome;
-                    $anexoModel->salvar($chamado_id, $caminhoRelativo);
+
+                    // Identificar tipo do arquivo
+                    $tipo = mime_content_type($caminho);
+
+                    $anexoModel->salvar($chamado_id, $caminhoRelativo, $tipo);
                 }
             }
 
-            // Se logado -> mensagem simples e volta ao dashboard
-            if (isset($_SESSION['usuario_id'])) {
+            // ==========================
+            // REDIRECIONAMENTO
+            // ==========================
+            if (!empty($_SESSION['usuario_id']) && !$_SESSION['is_guest']) {
+                // Usuário logado -> volta pro dashboard
                 setFlashMessage("Chamado registrado com sucesso!", "success");
                 header('Location: ?route=auth/dashboard');
             } else {
-                // Se anônimo -> mostra protocolo e fica na tela de criação
+                // Visitante (via QR Code) -> mostra protocolo e vai para consulta
                 setFlashMessage("Chamado registrado com sucesso. Protocolo: {$chamado->protocolo}", "success");
                 header('Location: ?route=chamados/consultar');
             }
@@ -64,28 +98,30 @@ class ChamadosController
     }
 }
 
-public function consultar() {
+
+    // ========================
+    // CONSULTA DE CHAMADO POR PROTOCOLO
+    // ========================
+   public function consultar() { 
     $chamado = null;
     $erro = null;
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $protocolo = trim($_POST['protocolo'] ?? '');
-        
-        if ($protocolo !== '') {
-            $chamadoModel = new Chamado($this->db);
-            $chamado = $chamadoModel->buscarPorProtocolo($protocolo);
+    // Se o visitante vier via QR Code com protocolo na URL
+    $protocolo = trim($_POST['protocolo'] ?? $_GET['protocolo'] ?? '');
 
-            if (!$chamado) {
-                $erro = "Protocolo inválido ou chamado não encontrado.";
-            }
-        } else {
-            $erro = "Informe o número do protocolo.";
+    if ($protocolo !== '') {
+        $chamadoModel = new Chamado($this->db);
+        $chamado = $chamadoModel->buscarPorProtocoloQr($protocolo); // Só QR Code
+
+        if (!$chamado) {
+            $erro = "Protocolo inválido ou chamado não encontrado.";
         }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $erro = "Informe o número do protocolo.";
     }
 
-    include __DIR__ . '/../../Views/chamados/consultar.php';
+    include __DIR__ . '/../Views/chamados/consultar.php';
 }
-
 
 
 
@@ -113,11 +149,18 @@ public function consultar() {
         $setorModel = new Setor($this->db);
         $prioridadeModel = new Prioridade($this->db);
         $usuarioModel = new Usuarios($this->db);
+        $anexoModel = new AnexoChamado();
 
         $tecnicos = $usuarioModel->listarPorCargo('Técnico'); // novo método no model Usuario
         $tipos = $tipoModel->listarTodos();
         $setores = $setorModel->listarTodos();
         $prioridades = $prioridadeModel->listarTodos();
+        $dados['anexos'] = $anexoModel->listarPorChamado($id);
+
+        foreach ($dados['anexos'] as &$anexo) {
+            $anexo['nome_arquivo'] = basename($anexo['caminho_arquivo']);
+            $anexo['caminho'] = $anexo['caminho_arquivo']; // caminho relativo usado na view
+        }
 
         require __DIR__ . '/../Views/chamados/complementar.php';
     }

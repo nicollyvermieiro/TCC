@@ -104,12 +104,22 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
             </div>
 
             <div class="col">
-                <a href="?route=chamados/listar" class="text-decoration-none">
+                <a href="?route=historicoStatus/listar" class="text-decoration-none">
                     <div class="card h-100 text-center p-3">
                         <div class="icon-circle"><i class="bi bi-clock-history"></i></div>
                         <h5 class="card-title">Histórico de Chamados</h5>
                         <p class="card-text">Consulte os chamados já concluídos.</p>
-                    </div> PUXAR SÓ OS CONCLUÍDOS->>>>>>>>>>>>>>
+                    </div> 
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="?route=qrCode/index" class="text-decoration-none">
+                    <div class="card h-100 text-center p-3">
+                        <div class="icon-circle"><i class="bi bi-qr-code"></i></div>
+                        <h5 class="card-title">Gerar QR Code</h5>
+                        <p class="card-text">Imprimir QR Code para usuário temporário registrar chamados.</p>
+                    </div>
                 </a>
             </div>
 

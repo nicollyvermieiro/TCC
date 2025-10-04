@@ -42,6 +42,21 @@
 
             </div>
 
+            <?php if (!empty($dados['anexos'])): ?>
+            <div class="mb-3">
+                <label class="form-label">Anexos do Chamado:</label>
+                <ul class="list-group">
+                    <?php foreach ($dados['anexos'] as $anexo): ?>
+                        <li class="list-group-item">
+                            <a href="<?= htmlspecialchars($anexo['caminho']) ?>" target="_blank">
+                                <?= htmlspecialchars($anexo['nome_arquivo']) ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
             <div class="mb-3">
                 <label for="descricao_servico" class="form-label">Descrição do Serviço</label>
                 <textarea name="descricao_servico" id="descricao_servico" class="form-control" rows="4" required></textarea>

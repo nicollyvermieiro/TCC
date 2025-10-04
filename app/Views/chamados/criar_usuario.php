@@ -26,6 +26,14 @@ $flash = getFlashMessage();
         <h2>Abrir Chamado</h2>
 
         <form method="POST" action="?route=chamados/salvarUsuario" enctype="multipart/form-data">
+
+             <?php if (!empty($_SESSION['is_guest']) && $_SESSION['is_guest'] === true): ?>
+            <div class="mb-3">
+                <label for="nome" class="form-label">Seu Nome (opcional)</label>
+                <input type="text" name="nome" id="nome" class="form-control" placeholder="Digite seu nome ou deixe em branco">
+            </div>
+            <?php endif; ?>
+
             <div class="mb-3">
                 <label for="descricao" class="form-label">Descrição do Problema</label>
                 <textarea name="descricao" id="descricao" class="form-control" rows="4" required></textarea>

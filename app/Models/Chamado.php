@@ -18,17 +18,21 @@ class Chamado {
     public $prioridade_id;
     public $resolucao;
     public $criado_em;
+    public $origem; // NOVO CAMPO
 
     public function __construct($db = null) {
         $this->conn = $db ?? (new Database())->getConnection();
     }
 
+    // =============================
+    // Método para criar chamado básico
+    // =============================
     public function criarBasico() {
         $this->protocolo = $this->protocolo ?? date("Y") . strtoupper(uniqid());
 
         $query = "INSERT INTO {$this->table} 
-                  (descricao, localizacao, usuario_id, usuario_temporario, protocolo, status) 
-                  VALUES (:descricao, :localizacao, :usuario_id, :usuario_temporario, :protocolo, :status)
+                  (descricao, localizacao, usuario_id, usuario_temporario, protocolo, status, origem) 
+                  VALUES (:descricao, :localizacao, :usuario_id, :usuario_temporario, :protocolo, :status, :origem)
                   RETURNING id";
 
         $stmt = $this->conn->prepare($query);
@@ -38,6 +42,7 @@ class Chamado {
         $stmt->bindParam(":usuario_temporario", $this->usuario_temporario);
         $stmt->bindParam(":protocolo", $this->protocolo);
         $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":origem", $this->origem);
 
         if ($stmt->execute()) {
             return $stmt->fetchColumn(); 
@@ -136,28 +141,29 @@ class Chamado {
     }
 
 
-    public function buscarPorProtocolo($protocolo) {
-    $query = "SELECT c.*, 
-                     tc.nome AS tipo_nome, 
-                     s.nome AS setor_nome, 
-                     u.nome AS usuario_nome,
-                     p.nome AS prioridade_nome,
-                     tec.nome AS tecnico_nome
-              FROM {$this->table} c
-              LEFT JOIN tipo_chamado tc ON c.tipo_id = tc.id
-              LEFT JOIN setor s ON c.setor_id = s.id
-              LEFT JOIN prioridade_chamado p ON c.prioridade_id = p.id
-              LEFT JOIN usuario u ON c.usuario_id = u.id
-              LEFT JOIN usuario tec ON c.tecnico_id = tec.id
-              WHERE c.protocolo = :protocolo
-              LIMIT 1";
+    public function buscarPorProtocoloQr($protocolo) {
+        $query = "SELECT c.*, 
+                         tc.nome AS tipo_nome, 
+                         s.nome AS setor_nome, 
+                         u.nome AS usuario_nome,
+                         p.nome AS prioridade_nome,
+                         tec.nome AS tecnico_nome
+                  FROM {$this->table} c
+                  LEFT JOIN tipo_chamado tc ON c.tipo_id = tc.id
+                  LEFT JOIN setor s ON c.setor_id = s.id
+                  LEFT JOIN prioridade_chamado p ON c.prioridade_id = p.id
+                  LEFT JOIN usuario u ON c.usuario_id = u.id
+                  LEFT JOIN usuario tec ON c.tecnico_id = tec.id
+                  WHERE c.protocolo = :protocolo
+                  AND c.origem = 'qrcode'
+                  LIMIT 1";
 
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(":protocolo", $protocolo);
-    $stmt->execute();
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":protocolo", $protocolo);
+        $stmt->execute();
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
 
     public function excluir($id) {

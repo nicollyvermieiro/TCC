@@ -114,12 +114,12 @@ $usuario_nome = $_SESSION['usuario_nome'] ?? 'Usuário';
             </div>
 
             <div class="col">
-                <a href="?route=chamados/listar" class="text-decoration-none text-dark">
+                <a href="?route=historicoStatus/listar" class="text-decoration-none text-dark">
                     <div class="card card-option h-100 text-center p-4">
                         <div class="card-icon"><i class="bi bi-clock-history"></i></div>
                         <h5>Histórico de Chamados</h5>
                         <p>Consulte os chamados já concluídos.</p>
-                    </div> PUXAR SÓ OS CONCLUÍDOS->>>>>>>>>>>>>>
+                    </div> 
                 </a>
             </div>
         </div>
