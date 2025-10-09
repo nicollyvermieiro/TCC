@@ -63,7 +63,7 @@ $usuario_nome = $_SESSION['usuario_nome'] ?? 'Usuário';
                 </div>
 
                 <div class="col">
-                    <a href="?route=relatorios/gerar" class="text-decoration-none text-dark">
+                    <a href="?route=relatorios/listar" class="text-decoration-none text-dark">
                         <div class="card card-option h-100 text-center p-4">
                             <div class="card-icon"><i class="bi bi-bar-chart-fill"></i></div>
                             <h5>Relatórios</h5>
@@ -99,31 +99,32 @@ $usuario_nome = $_SESSION['usuario_nome'] ?? 'Usuário';
             </div>
 
         <?php elseif ($cargo_id == 2): ?>
-            <!-- TÉCNICO -->
-            <h4 class="mb-3">Chamados de Manutenção</h4>
-            <div class="row row-cols-1 row-cols-md-2 g-4 mt-2">
-                <div class="col">
-                    <a href="?route=chamados/listar" class="text-decoration-none text-dark">
-                        <div class="card card-option h-100 text-center p-4">
-                            <div class="card-icon"><i class="bi bi-wrench-adjustable-circle-fill"></i></div>
-                            <h5>Meus Chamados</h5>
-                            <p>Visualize e atualize o status dos chamados atribuídos.</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
+    <!-- TÉCNICO -->
+    <h4 class="mb-3">Chamados de Manutenção</h4>
 
-            <div class="col">
-                <a href="?route=historicoStatus/listar" class="text-decoration-none text-dark">
-                    <div class="card card-option h-100 text-center p-4">
-                        <div class="card-icon"><i class="bi bi-clock-history"></i></div>
-                        <h5>Histórico de Chamados</h5>
-                        <p>Consulte os chamados já concluídos.</p>
-                    </div> 
-                </a>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 g-4 mt-2">
+        <div class="col">
+            <a href="?route=chamados/listar" class="text-decoration-none text-dark">
+                <div class="card card-option h-100 text-center p-4">
+                    <div class="card-icon"><i class="bi bi-wrench-adjustable-circle-fill"></i></div>
+                    <h5>Meus Chamados</h5>
+                    <p>Visualize e atualize o status dos chamados atribuídos.</p>
+                </div>
+            </a>
         </div>
-        <?php endif; ?>
+
+        <div class="col">
+            <a href="?route=historicoStatus/listar" class="text-decoration-none text-dark">
+                <div class="card card-option h-100 text-center p-4">
+                    <div class="card-icon"><i class="bi bi-clock-history"></i></div>
+                    <h5>Histórico de Chamados</h5>
+                    <p>Consulte os chamados já concluídos.</p>
+                </div> 
+            </a>
+        </div>
+    </div>
+<?php endif; ?>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -90,4 +90,25 @@ class RelatoriosController
             }
         }
     }
+
+    public function gerarPorPeriodo()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $inicio = $_POST['inicio'] ?? null;
+            $fim = $_POST['fim'] ?? null;
+
+            if ($inicio && $fim) {
+                require_once __DIR__ . '/../Models/Chamado.php';
+                $chamado = new Chamado();
+                $dados = $chamado->listarPorPeriodo($inicio, $fim);
+
+                require __DIR__ . '/../Views/relatorios/resultado_periodo.php';
+            } else {
+                echo "Por favor, selecione o período inicial e final.";
+            }
+        } else {
+            require __DIR__ . '/../Views/relatorios/filtro_periodo.php';
+        }
+    }
+
 }

@@ -165,6 +165,28 @@ class Chamado {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+   public function listarPorPeriodo($inicio, $fim) {
+        $query = "
+            SELECT c.id, c.descricao, c.status, c.criado_em, 
+                s.nome AS setor_nome, 
+                t.nome AS tipo_nome,
+                u.nome AS tecnico_nome
+            FROM chamado c
+            LEFT JOIN setor s ON c.setor_id = s.id
+            LEFT JOIN tipo_chamado t ON c.tipo_id = t.id
+            LEFT JOIN usuario u ON c.tecnico_id = u.id
+            WHERE c.criado_em BETWEEN :inicio AND :fim
+            ORDER BY c.criado_em DESC
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':inicio', $inicio);
+        $stmt->bindParam(':fim', $fim);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 
     public function excluir($id) {
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE id = :id");
@@ -176,3 +198,4 @@ class Chamado {
         $this->conn = $conn;
     }
 }
+    
