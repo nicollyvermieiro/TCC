@@ -7,17 +7,24 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
     header("Location: ?route=auth/dashboard");
     exit;
 }
+
+// Variáveis opcionais que o controller pode passar
+$setores  = $setores ?? [];   // array de ['id'=>'','nome'=>'']
+$tecnicos = $tecnicos ?? [];  // array de ['id'=>'','nome'=>'']
+$relatorios = $relatorios ?? []; // array de relatórios já gerados
+
+// Lista de status (ajuste conforme seus status reais)
+$statusList = ['Aguardando Atendimento','Em Análise','Em Execução','Concluído','Cancelado'];
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Relatórios Gerados</title>
+    <title>Relatórios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        /* Mantive o estilo do exemplo para consistência */
         .btn-voltar {
             background-color: #0d6efd;
             color: #fff;
@@ -34,6 +41,7 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
         .btn-voltar:hover { transform: translateY(-2px); }
         body { background-color: #f8f9fa; font-family: "Segoe UI", Tahoma, Verdana, sans-serif; }
         .card { border-radius: 12px; }
+        .small-muted { font-size:0.9rem; color:#666; }
     </style>
 </head>
 <body>
@@ -42,7 +50,7 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
     <div class="container mt-5">
         <div class="d-flex align-items-center mb-3">
             <button class="btn-voltar me-3" onclick="window.history.back();"><i class="bi bi-arrow-left"></i></button>
-            <h2 class="mb-0">Relatórios Gerados</h2>
+            <h2 class="mb-0">Relatórios</h2>
         </div>
 
         <?php $flash = getFlashMessage(); if ($flash): ?>
@@ -52,47 +60,112 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
             </div>
         <?php endif; ?>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <a href="?route=relatorios/criar" class="btn btn-success"><i class="bi bi-plus-circle"></i> Novo Relatório</a>
-                <a href="?route=relatorios/gerarPorPeriodo" class="btn btn-primary ms-2"><i class="bi bi-calendar-event"></i> Gerar por Período</a>
-            </div>
-        </div>
+        <div class="row g-4">
+            <!-- Formulário de geração (lado esquerdo) -->
+            <div class="col-12 col-md-5">
+                <div class="card p-4 h-100">
+                    <h5 class="mb-3"><i class="bi bi-calendar-event"></i> Gerar Relatório</h5>
+                    <p class="small-muted">Selecione o período e (opcional) filtre por setor, status ou técnico.</p>
 
-        <?php if (!empty($relatorios)): ?>
-            <div class="card p-3">
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered align-middle mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Título</th>
-                                <th>Descrição</th>
-                                <th>Data de Geração</th>
-                                <th class="text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($relatorios as $r): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($r['id']) ?></td>
-                                    <td><?= htmlspecialchars($r['titulo']) ?></td>
-                                    <td style="max-width:400px; word-wrap:break-word;"><?= htmlspecialchars($r['descricao']) ?></td>
-                                    <td><?= htmlspecialchars(date('d/m/Y', strtotime($r['data_geracao']))) ?></td>
-                                    <td class="text-center">
-                                        <a href="?route=relatorios/editar&id=<?= $r['id'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
-                                        <a href="?route=relatorios/excluir&id=<?= $r['id'] ?>" class="btn btn-danger btn-sm"
-                                           onclick="return confirm('Tem certeza que deseja excluir este relatório?')"><i class="bi bi-trash"></i></a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                    <form method="POST" action="?route=relatorios/gerarPorPeriodo">
+                        <div class="mb-3">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="inicio" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="fim" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Setor (opcional)</label>
+                            <select name="setor" class="form-select">
+                                <option value="">Todos os Setores</option>
+                                <?php foreach ($setores as $s): ?>
+                                    <option value="<?= htmlspecialchars($s['id']) ?>"><?= htmlspecialchars($s['nome']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Status (opcional)</label>
+                            <select name="status" class="form-select">
+                                <option value="">Todos os Status</option>
+                                <?php foreach ($statusList as $st): ?>
+                                    <option value="<?= htmlspecialchars($st) ?>"><?= htmlspecialchars($st) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Técnico (opcional)</label>
+                            <select name="tecnico" class="form-select">
+                                <option value="">Todos os Técnicos</option>
+                                <?php foreach ($tecnicos as $t): ?>
+                                    <option value="<?= htmlspecialchars($t['id']) ?>"><?= htmlspecialchars($t['nome']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-center mt-3">
+                            <button type="submit" class="btn btn-success"><i class="bi bi-file-earmark-text"></i> Gerar</button>
+                            <a href="?route=relatorios/listar" class="btn btn-outline-secondary">Limpar</a>
+                        </div>
+
+                        <div class="text-muted text-center mt-2 small">Após gerar, será exibida a tabela de resultados com opções de exportação.</div>
+                    </form>
                 </div>
             </div>
-        <?php else: ?>
-            <div class="alert alert-info text-center">Nenhum relatório gerado ainda.</div>
-        <?php endif; ?>
+
+            <!-- Lista de relatórios gerados / histórico (lado direito) -->
+            <div class="col-12 col-md-7">
+                <div class="card p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h5 class="mb-1"><i class="bi bi-archive"></i> Relatórios Gerados</h5>
+                            <div class="small-muted">Histórico de relatórios salvos (se houver)</div>
+                        </div>
+                        <div>
+                            <!-- aqui futuramente pode ter botão para exportar todos -->
+                        </div>
+                    </div>
+
+                    <?php if (!empty($relatorios)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered align-middle mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Título</th>
+                                        <th>Descrição</th>
+                                        <th>Gerado em</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($relatorios as $r): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($r['id']) ?></td>
+                                            <td><?= htmlspecialchars($r['titulo']) ?></td>
+                                            <td style="max-width:280px; word-wrap:break-word;"><?= htmlspecialchars($r['descricao']) ?></td>
+                                            <td><?= htmlspecialchars(date('d/m/Y', strtotime($r['data_geracao']))) ?></td>
+                                            <td class="text-center">
+                                                <!-- visualizar / exportar -->
+                                                <a href="?route=relatorios/visualizar&id=<?= $r['id'] ?>" class="btn btn-sm btn-primary" title="Visualizar"><i class="bi bi-eye"></i></a>
+                                                <a href="?route=relatorios/excluir&id=<?= $r['id'] ?>" class="btn btn-sm btn-danger" title="Excluir"
+                                                   onclick="return confirm('Tem certeza que deseja excluir este relatório?')"><i class="bi bi-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info text-center mb-0">Nenhum relatório gerado ainda.</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

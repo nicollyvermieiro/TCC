@@ -165,27 +165,48 @@ class Chamado {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-   public function listarPorPeriodo($inicio, $fim) {
-        $query = "
-            SELECT c.id, c.descricao, c.status, c.criado_em, 
-                s.nome AS setor_nome, 
-                t.nome AS tipo_nome,
-                u.nome AS tecnico_nome
-            FROM chamado c
-            LEFT JOIN setor s ON c.setor_id = s.id
-            LEFT JOIN tipo_chamado t ON c.tipo_id = t.id
-            LEFT JOIN usuario u ON c.tecnico_id = u.id
-            WHERE c.criado_em BETWEEN :inicio AND :fim
-            ORDER BY c.criado_em DESC
-        ";
+   public function listarPorPeriodo($inicio, $fim, $setor = null, $status = null, $tecnico = null)
+{
+    if ($inicio && strlen($inicio) === 10) $inicio .= ' 00:00:00';
+    if ($fim && strlen($fim) === 10) $fim .= ' 23:59:59';
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':inicio', $inicio);
-        $stmt->bindParam(':fim', $fim);
-        $stmt->execute();
+    $query = "
+        SELECT 
+            c.id,
+            c.descricao,
+            c.localizacao,
+            c.status,
+            p.nome AS prioridade_nome,
+            s.nome AS setor_nome,
+            tc.nome AS tipo_nome,
+            COALESCE(u.nome, 'Não atribuído') AS tecnico_nome,
+            TO_CHAR(c.criado_em, 'DD/MM/YYYY HH24:MI') AS data_criacao
+        FROM chamado c
+        LEFT JOIN setor s ON c.setor_id = s.id
+        LEFT JOIN tipo_chamado tc ON c.tipo_id = tc.id
+        LEFT JOIN usuario u ON c.tecnico_id = u.id
+        LEFT JOIN prioridade_chamado p ON c.prioridade_id = p.id
+        WHERE c.criado_em BETWEEN :inicio AND :fim
+    ";
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    // Aplicar filtros opcionais (setor, status, técnico)
+    if (!empty($setor))  $query .= " AND c.setor_id = :setor";
+    if (!empty($status)) $query .= " AND c.status = :status";
+    if (!empty($tecnico)) $query .= " AND c.tecnico_id = :tecnico";
+
+    $query .= " ORDER BY c.criado_em DESC";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':inicio', $inicio);
+    $stmt->bindParam(':fim', $fim);
+
+    if (!empty($setor)) $stmt->bindParam(':setor', $setor);
+    if (!empty($status)) $stmt->bindParam(':status', $status);
+    if (!empty($tecnico)) $stmt->bindParam(':tecnico', $tecnico);
+
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 
     public function excluir($id) {
