@@ -13,8 +13,7 @@ $setores  = $setores ?? [];   // array de ['id'=>'','nome'=>'']
 $tecnicos = $tecnicos ?? [];  // array de ['id'=>'','nome'=>'']
 $relatorios = $relatorios ?? []; // array de relatórios já gerados
 
-// Lista de status (ajuste conforme seus status reais)
-$statusList = ['Aguardando Atendimento','Em Análise','Em Execução','Concluído','Cancelado'];
+
 ?>
 
 <!DOCTYPE html>
@@ -136,24 +135,49 @@ $statusList = ['Aguardando Atendimento','Em Análise','Em Execução','Concluíd
                                 <thead class="table-dark">
                                     <tr>
                                         <th>ID</th>
-                                        <th>Título</th>
-                                        <th>Descrição</th>
-                                        <th>Gerado em</th>
+                                        <th>Tipo</th>
+                                        <th>Período</th>
+                                        <th>Gerado Por</th>
+                                        <th>Data de Geração</th>
                                         <th class="text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($relatorios as $r): ?>
+                                        <?php
+                                            // Garantir que não quebre se alguma data estiver nula
+                                            $inicio = !empty($r['periodo_inicio']) ? date('d/m/Y', strtotime($r['periodo_inicio'])) : '—';
+                                            $fim    = !empty($r['periodo_fim']) ? date('d/m/Y', strtotime($r['periodo_fim'])) : '—';
+                                            $geracao = !empty($r['data_geracao']) ? date('d/m/Y H:i', strtotime($r['data_geracao'])) : '—';
+                                        ?>
                                         <tr>
                                             <td><?= htmlspecialchars($r['id']) ?></td>
-                                            <td><?= htmlspecialchars($r['titulo']) ?></td>
-                                            <td style="max-width:280px; word-wrap:break-word;"><?= htmlspecialchars($r['descricao']) ?></td>
-                                            <td><?= htmlspecialchars(date('d/m/Y', strtotime($r['data_geracao']))) ?></td>
-                                            <td class="text-center">
-                                                <!-- visualizar / exportar -->
-                                                <a href="?route=relatorios/visualizar&id=<?= $r['id'] ?>" class="btn btn-sm btn-primary" title="Visualizar"><i class="bi bi-eye"></i></a>
-                                                <a href="?route=relatorios/excluir&id=<?= $r['id'] ?>" class="btn btn-sm btn-danger" title="Excluir"
-                                                   onclick="return confirm('Tem certeza que deseja excluir este relatório?')"><i class="bi bi-trash"></i></a>
+                                            <td><?= htmlspecialchars($r['tipo']) ?></td>
+                                            <td><?= htmlspecialchars($inicio) ?> até <?= htmlspecialchars($fim) ?></td>
+                                            <td><?= htmlspecialchars($r['usuario_nome'] ?? '—') ?></td>
+                                            <td><?= htmlspecialchars($geracao) ?></td>
+                                            <td class="text-center d-flex justify-content-center gap-1">
+                                                <!-- Botão Excluir -->
+                                                <a href="?route=relatorios/excluir&id=<?= $r['id'] ?>" 
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Tem certeza que deseja excluir este relatório?')"
+                                                title="Excluir">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+
+                                                <!-- Botão Exportar PDF -->
+                                                <a href="?route=relatorios/exportarPdf&id=<?= $r['id'] ?>" 
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Exportar PDF" target="_blank">
+                                                    <i class="bi bi-file-earmark-pdf"></i>
+                                                </a>
+
+                                                <!-- Botão Exportar Excel -->
+                                                <a href="?route=relatorios/exportarExcel&id=<?= $r['id'] ?>" 
+                                                class="btn btn-sm btn-outline-success"
+                                                title="Exportar Excel" target="_blank">
+                                                    <i class="bi bi-file-earmark-excel"></i>
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

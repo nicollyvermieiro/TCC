@@ -97,18 +97,8 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
             </table>
 
             <div class="d-flex justify-content-end mt-3">
-                <a href="?route=relatorios/exportarPdf&periodo_inicio=<?= $inicio ?>&periodo_fim=<?= $fim ?>&setor=<?= $setor ?>&status=<?= $status ?>&tecnico=<?= $tecnico ?>" class="btn btn-outline-danger btn-sm me-1">
-                    <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
-                </a>
-
-                <a href="?route=relatorios/exportarCsv&periodo_inicio=<?= $inicio ?>&periodo_fim=<?= $fim ?>&setor=<?= $setor ?>&status=<?= $status ?>&tecnico=<?= $tecnico ?>" class="btn btn-outline-success btn-sm me-1">
-                    <i class="bi bi-filetype-csv"></i> Exportar CSV
-                </a>
-
-                <a href="?route=relatorios/exportarExcel&periodo_inicio=<?= $inicio ?>&periodo_fim=<?= $fim ?>&setor=<?= $setor ?>&status=<?= $status ?>&tecnico=<?= $tecnico ?>" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-file-earmark-excel"></i> Exportar Excel
-                </a>
-
+                <a href="?route=relatorios/exportarPdf" class="btn btn-outline-danger btn-sm me-1"><i class="bi bi-file-earmark-pdf"></i> Exportar PDF</a>
+                <a href="?route=relatorios/exportarExcel" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-excel"></i> Exportar Excel</a>
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 
+
 class Chamado {
     private $conn;
     private $table = "chamado";
@@ -18,7 +19,7 @@ class Chamado {
     public $prioridade_id;
     public $resolucao;
     public $criado_em;
-    public $origem; // NOVO CAMPO
+    public $origem; 
 
     public function __construct($db = null) {
         $this->conn = $db ?? (new Database())->getConnection();
@@ -118,6 +119,7 @@ class Chamado {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+
     public function buscarPorId($id) {
         $query = "
             SELECT c.*, u.nome AS tecnico_nome
@@ -165,7 +167,7 @@ class Chamado {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-   public function listarPorPeriodo($inicio, $fim, $setor = null, $status = null, $tecnico = null)
+ public function listarPorPeriodo($inicio, $fim, $setor = null, $status = null, $tecnico = null)
 {
     if ($inicio && strlen($inicio) === 10) $inicio .= ' 00:00:00';
     if ($fim && strlen($fim) === 10) $fim .= ' 23:59:59';
@@ -189,7 +191,6 @@ class Chamado {
         WHERE c.criado_em BETWEEN :inicio AND :fim
     ";
 
-    // Aplicar filtros opcionais (setor, status, técnico)
     if (!empty($setor))  $query .= " AND c.setor_id = :setor";
     if (!empty($status)) $query .= " AND c.status = :status";
     if (!empty($tecnico)) $query .= " AND c.tecnico_id = :tecnico";
@@ -199,7 +200,6 @@ class Chamado {
     $stmt = $this->conn->prepare($query);
     $stmt->bindParam(':inicio', $inicio);
     $stmt->bindParam(':fim', $fim);
-
     if (!empty($setor)) $stmt->bindParam(':setor', $setor);
     if (!empty($status)) $stmt->bindParam(':status', $status);
     if (!empty($tecnico)) $stmt->bindParam(':tecnico', $tecnico);
@@ -208,6 +208,10 @@ class Chamado {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+    public function listarStatusDistintos() {
+        $stmt = $this->conn->query("SELECT DISTINCT status FROM chamado ORDER BY status ASC");
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 
     public function excluir($id) {
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE id = :id");

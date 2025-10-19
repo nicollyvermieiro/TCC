@@ -24,14 +24,14 @@ class Usuarios {
     }
 
      public function listarPorCargo($cargoNome) {
-    $sql = "SELECT u.id, u.nome 
-            FROM usuario u
-            JOIN cargo c ON u.cargo_id = c.id
-            WHERE c.nome = :cargoNome";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->execute(['cargoNome' => $cargoNome]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        $sql = "SELECT u.id, u.nome 
+                FROM usuario u
+                JOIN cargo c ON u.cargo_id = c.id
+                WHERE c.nome = :cargoNome";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['cargoNome' => $cargoNome]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
      public function criar() {

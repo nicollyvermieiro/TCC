@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../../config/database.php';
 
 class RelatorioGerado {
@@ -7,33 +6,44 @@ class RelatorioGerado {
     private $table = "relatorio_gerado";
 
     public $id;
-    public $titulo;
-    public $descricao;
+    public $tipo;
+    public $gerado_por;
+    public $periodo_inicio;
+    public $periodo_fim;
     public $data_geracao;
 
-    public function __construct() {
-        $this->conn = (new Database())->getConnection();
+     public function __construct($db = null) {
+        $this->conn = $db ?? (new Database())->getConnection();
     }
 
+
+    // Criar novo registro de relatório gerado
     public function criar() {
-        $query = "INSERT INTO {$this->table} (titulo, descricao, data_geracao) VALUES (:titulo, :descricao, :data_geracao)";
+        $query = "INSERT INTO {$this->table} 
+                    (tipo, gerado_por, periodo_inicio, periodo_fim, data_geracao)
+                  VALUES (:tipo, :gerado_por, :periodo_inicio, :periodo_fim, :data_geracao)";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":titulo", $this->titulo);
-        $stmt->bindParam(":descricao", $this->descricao);
+        $stmt->bindParam(":tipo", $this->tipo);
+        $stmt->bindParam(":gerado_por", $this->gerado_por);
+        $stmt->bindParam(":periodo_inicio", $this->periodo_inicio);
+        $stmt->bindParam(":periodo_fim", $this->periodo_fim);
         $stmt->bindParam(":data_geracao", $this->data_geracao);
         return $stmt->execute();
     }
 
-    public function atualizar() {
-        $query = "UPDATE {$this->table} SET titulo = :titulo, descricao = :descricao, data_geracao = :data_geracao WHERE id = :id";
+    // Listar todos os relatórios com nome do usuário
+    public function listarTodos() {
+        $query = "SELECT r.*, u.nome AS usuario_nome 
+                  FROM {$this->table} r
+                  LEFT JOIN usuario u ON u.id = r.gerado_por
+                  ORDER BY r.data_geracao DESC";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":titulo", $this->titulo);
-        $stmt->bindParam(":descricao", $this->descricao);
-        $stmt->bindParam(":data_geracao", $this->data_geracao);
-        $stmt->bindParam(":id", $this->id);
-        return $stmt->execute();
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+
+    // Excluir relatório
     public function excluir($id) {
         $query = "DELETE FROM {$this->table} WHERE id = :id";
         $stmt = $this->conn->prepare($query);
@@ -41,13 +51,7 @@ class RelatorioGerado {
         return $stmt->execute();
     }
 
-    public function listarTodos() {
-        $query = "SELECT * FROM {$this->table} ORDER BY data_geracao DESC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
+    // Buscar relatório por ID
     public function buscarPorId($id) {
         $query = "SELECT * FROM {$this->table} WHERE id = :id";
         $stmt = $this->conn->prepare($query);
