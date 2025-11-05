@@ -8,12 +8,9 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
     exit;
 }
 
-// Variáveis opcionais que o controller pode passar
-$setores  = $setores ?? [];   // array de ['id'=>'','nome'=>'']
-$tecnicos = $tecnicos ?? [];  // array de ['id'=>'','nome'=>'']
-$relatorios = $relatorios ?? []; // array de relatórios já gerados
-
-
+$setores  = $setores ?? [];
+$tecnicos = $tecnicos ?? [];
+$relatorios = $relatorios ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -23,33 +20,49 @@ $relatorios = $relatorios ?? []; // array de relatórios já gerados
     <title>Relatórios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         .btn-voltar {
-            background-color: #0d6efd;
-            color: #fff;
-            border: none;
-            padding: 6px 14px;
-            font-size: 0.9rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: #0d6efd;
+            font-size: 1.8rem;
+            text-decoration: none;
+            transition: transform 0.2s ease, color 0.2s ease;
         }
-        .btn-voltar:hover { transform: translateY(-2px); }
-        body { background-color: #f8f9fa; font-family: "Segoe UI", Tahoma, Verdana, sans-serif; }
-        .card { border-radius: 12px; }
-        .small-muted { font-size:0.9rem; color:#666; }
+
+        .btn-voltar:hover {
+            transform: translateX(-3px);
+            color: #0b5ed7;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
+        }
+
+        .card {
+            border-radius: 12px;
+        }
+
+        .small-muted {
+            font-size: 0.9rem;
+            color: #666;
+        }
     </style>
 </head>
+
 <body>
     <?php include __DIR__ . '/../partials/menu.php'; ?>
 
-    <div class="container mt-5">
-        <div class="d-flex align-items-center mb-3">
-            <button class="btn-voltar me-3" onclick="window.history.back();"><i class="bi bi-arrow-left"></i></button>
-            <h2 class="mb-0">Relatórios</h2>
+    <div class="container mt-4">
+        <div class="d-flex flex-column align-items-start mb-4">
+            <a href="?route=auth/dashboard"
+                class="text-primary fs-3 mb-2 btn-back"
+                title="Voltar ao painel"
+                style="text-decoration: none;">
+                    <i class="bi bi-arrow-left-circle"></i>
+            </a>
+            <h2 class="fw-semibold text-dark mt-2">Relatórios</h2>
         </div>
 
         <?php $flash = getFlashMessage(); if ($flash): ?>
@@ -60,7 +73,6 @@ $relatorios = $relatorios ?? []; // array de relatórios já gerados
         <?php endif; ?>
 
         <div class="row g-4">
-            <!-- Formulário de geração (lado esquerdo) -->
             <div class="col-12 col-md-5">
                 <div class="card p-4 h-100">
                     <h5 class="mb-3"><i class="bi bi-calendar-event"></i> Gerar Relatório</h5>
@@ -111,21 +123,19 @@ $relatorios = $relatorios ?? []; // array de relatórios já gerados
                             <a href="?route=relatorios/listar" class="btn btn-outline-secondary">Limpar</a>
                         </div>
 
-                        <div class="text-muted text-center mt-2 small">Após gerar, será exibida a tabela de resultados com opções de exportação.</div>
+                        <div class="text-muted text-center mt-2 small">
+                            Após gerar, será exibida a tabela de resultados com opções de exportação.
+                        </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Lista de relatórios gerados / histórico (lado direito) -->
             <div class="col-12 col-md-7">
                 <div class="card p-3 h-100">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
                             <h5 class="mb-1"><i class="bi bi-archive"></i> Relatórios Gerados</h5>
                             <div class="small-muted">Histórico de relatórios salvos (se houver)</div>
-                        </div>
-                        <div>
-                            <!-- aqui futuramente pode ter botão para exportar todos -->
                         </div>
                     </div>
 
@@ -145,9 +155,8 @@ $relatorios = $relatorios ?? []; // array de relatórios já gerados
                                 <tbody>
                                     <?php foreach ($relatorios as $r): ?>
                                         <?php
-                                            // Garantir que não quebre se alguma data estiver nula
                                             $inicio = !empty($r['periodo_inicio']) ? date('d/m/Y', strtotime($r['periodo_inicio'])) : '—';
-                                            $fim    = !empty($r['periodo_fim']) ? date('d/m/Y', strtotime($r['periodo_fim'])) : '—';
+                                            $fim = !empty($r['periodo_fim']) ? date('d/m/Y', strtotime($r['periodo_fim'])) : '—';
                                             $geracao = !empty($r['data_geracao']) ? date('d/m/Y H:i', strtotime($r['data_geracao'])) : '—';
                                         ?>
                                         <tr>
@@ -157,25 +166,17 @@ $relatorios = $relatorios ?? []; // array de relatórios já gerados
                                             <td><?= htmlspecialchars($r['usuario_nome'] ?? '—') ?></td>
                                             <td><?= htmlspecialchars($geracao) ?></td>
                                             <td class="text-center d-flex justify-content-center gap-1">
-                                                <!-- Botão Excluir -->
-                                                <a href="?route=relatorios/excluir&id=<?= $r['id'] ?>" 
-                                                class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Tem certeza que deseja excluir este relatório?')"
-                                                title="Excluir">
+                                                <button class="btn btn-sm btn-danger btn-excluir" 
+                                                        data-id="<?= $r['id'] ?>" 
+                                                        title="Excluir">
                                                     <i class="bi bi-trash"></i>
-                                                </a>
-
-                                                <!-- Botão Exportar PDF -->
+                                                </button>
                                                 <a href="?route=relatorios/exportarPdf&id=<?= $r['id'] ?>" 
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Exportar PDF" target="_blank">
+                                                   class="btn btn-sm btn-outline-danger" title="Exportar PDF" target="_blank">
                                                     <i class="bi bi-file-earmark-pdf"></i>
                                                 </a>
-
-                                                <!-- Botão Exportar Excel -->
                                                 <a href="?route=relatorios/exportarExcel&id=<?= $r['id'] ?>" 
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Exportar Excel" target="_blank">
+                                                   class="btn btn-sm btn-outline-success" title="Exportar Excel" target="_blank">
                                                     <i class="bi bi-file-earmark-excel"></i>
                                                 </a>
                                             </td>
@@ -193,5 +194,29 @@ $relatorios = $relatorios ?? []; // array de relatórios já gerados
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.querySelectorAll('.btn-excluir').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Esta ação excluirá o relatório permanentemente.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `?route=relatorios/excluir&id=${id}`;
+            }
+        });
+    });
+});
+</script>
+
 </body>
 </html>

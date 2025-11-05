@@ -20,7 +20,7 @@
     <?php endif; ?>
 
     <div class="container mt-4">
-        <h1 class="mb-4">Criar Setor</h1>
+        <h2 class="mb-4">Criar Setor</h2>
 
         <form method="post" action="?route=setores/salvar">
             <div class="mb-3">

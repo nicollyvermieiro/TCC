@@ -20,7 +20,7 @@
     <?php endif; ?>
 
     <div class="container mt-4">
-        <h1 class="mb-4">Criar Tipo de Chamado</h1>
+        <h2 class="mb-4">Criar Tipo de Chamado</h2>
 
         <form method="post" action="?route=tipos_chamados/salvar">
             <div class="mb-3">

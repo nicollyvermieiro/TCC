@@ -1,44 +1,76 @@
 <?php
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/phpqrcode/qrlib.php';
 
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
+class QrCodeController
+{
+    private $uploadDir;
+    private $baseUrl;
 
-class QrCodeController {
+    public function __construct()
+    {
+        $this->uploadDir = __DIR__ . '/../../public/temp_qrcodes/';
 
-    // Gera e exibe o QR Code como SVG de forma totalmente limpa
-    public function gerar() {
-        // Desativa exibição de erros para não quebrar o SVG
-        error_reporting(0);
-        ini_set('display_errors', 0);
+        if (!is_dir($this->uploadDir)) {
+            mkdir($this->uploadDir, 0777, true);
+        }
 
-        // URL que o QR Code vai apontar
-        $url = 'http://localhost/TCC/public/?route=chamados/criarUsuario';
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-        // Configuração do QR Code
-        $options = new QROptions([
-            'outputType' => QRCode::OUTPUT_MARKUP_SVG, // SVG, sem GD
-            'eccLevel'   => QRCode::ECC_L,
-            'scale'      => 5,
-        ]);
-
-        // Limpa qualquer buffer de saída existente
-        if (ob_get_length()) ob_end_clean();
-        ob_start();
-
-        // Envia o header correto
-        header('Content-Type: image/svg+xml');
-
-        // Gera o QR Code
-        echo (new QRCode($options))->render($url);
-
-        // Limpa buffer e garante que nada mais seja enviado
-        ob_end_flush();
-        exit;
+        // 🔹 Detecta automaticamente se ngrok está rodando
+        $this->baseUrl = $this->detectarBaseUrl();
     }
 
-    // Tela com o QR Code para exibir/imprimir
-    public function index() {
-        include __DIR__ . '/../Views/qrcode/index.php';
+    private function detectarBaseUrl()
+    {
+        // URL padrão local
+        $urlPadrao = "http://192.168.100.26";
+
+        // Tenta buscar o domínio ngrok (porta padrão 4040)
+        $ngrokApi = @file_get_contents("http://127.0.0.1:4040/api/tunnels");
+
+        if ($ngrokApi !== false) {
+            $data = json_decode($ngrokApi, true);
+            if (isset($data['tunnels'][0]['public_url'])) {
+                return $data['tunnels'][0]['public_url']; // ex: https://xxx.ngrok-free.dev
+            }
+        }
+
+        // Caso o ngrok não esteja ativo, usa IP local
+        return $urlPadrao;
+    }
+
+    // Protege acesso apenas para administradores
+    private function protegerAdministrador()
+    {
+        if (empty($_SESSION['usuario_id']) || $_SESSION['cargo_id'] != 1) {
+            header('Location: ?route=auth/login');
+            exit;
+        }
+    }
+
+    // Exibe a página com o QR Code
+    public function index()
+    {
+        $this->protegerAdministrador();
+
+        // 🔹 Gera URL dinâmica com base no domínio correto
+        $urlChamado = "{$this->baseUrl}/?route=chamados/criarUsuario";
+
+        include __DIR__ . '/../Views/qrCode/exibir.php';
+    }
+
+    // Gera o QR Code (imagem)
+    public function gerar()
+    {
+        $this->protegerAdministrador();
+
+        // 🔹 Usa o mesmo domínio detectado
+        $urlChamado = "{$this->baseUrl}/?route=chamados/criarUsuario";
+
+        header('Content-Type: image/png');
+        QRcode::png($urlChamado, false, QR_ECLEVEL_L, 6);
+        exit;
     }
 }

@@ -31,11 +31,10 @@ class ChamadosController
 
         require __DIR__ . '/../Views/chamados/criar_usuario.php';
     }
-
-    // ========================
-    // SALVAR CHAMADO
-    // ========================
-    public function salvarUsuario() {
+// ========================
+// SALVAR CHAMADO
+// ========================
+public function salvarUsuario() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $chamado = new Chamado($this->db);
 
@@ -55,6 +54,7 @@ class ChamadosController
             $chamado->origem = 'qrcode';
         }
 
+        // Cria chamado básico e pega o ID gerado
         $chamado_id = $chamado->criarBasico();
 
         if ($chamado_id) {
@@ -84,9 +84,10 @@ class ChamadosController
                 setFlashMessage("Chamado registrado com sucesso!", "success");
                 header('Location: ?route=auth/dashboard');
             } else {
-                // Visitante (via QR Code) -> mostra protocolo e vai para consulta
+                // Visitante (via QR Code) -> mostra protocolo na consulta
                 setFlashMessage("Chamado registrado com sucesso. Protocolo: {$chamado->protocolo}", "success");
-                header('Location: ?route=chamados/consultar');
+                // Passa protocolo via GET para auto-preenchimento
+                header('Location: ?route=chamados/consultar&protocolo=' . urlencode($chamado->protocolo));
             }
             exit;
 
@@ -328,11 +329,11 @@ public function atualizar() {
 
     public function gerenciar() {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
-            setFlashMessage("Acesso negado. Área restrita a administradores.", "danger");
-            header("Location: ?route=auth/dashboard");
-            exit;
-        }
+        if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['cargo_id'] ?? null, [1, 2])) {
+        setFlashMessage("Acesso negado. Área restrita a administradores e técnicos.", "danger");
+        header("Location: ?route=auth/dashboard");
+        exit;
+    }
         require __DIR__ . '/../Views/chamados/gerenciar.php';
     }
 }

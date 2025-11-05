@@ -88,63 +88,95 @@ class RelatoriosController
 
             require __DIR__ . '/../Views/relatorios/resultado_periodo.php';
         }
+        
     }
 
     // Exportar PDF
     public function exportarPdf() {
-        require_once __DIR__ . '/../../vendor/autoload.php';
+    require_once __DIR__ . '/../../vendor/autoload.php';
 
-        // Recupera filtros salvos
-        $filtros = $_SESSION['filtros_relatorio'] ?? [];
-        $inicio  = $filtros['inicio'] ?? null;
-        $fim     = $filtros['fim'] ?? null;
-        $setor   = $filtros['setor'] ?? null;
-        $status  = $filtros['status'] ?? null;
-        $tecnico = $filtros['tecnico'] ?? null;
+    
+    date_default_timezone_set('America/Campo_Grande');
 
-        $chamado = new Chamado();
-        $dadosChamados = $chamado->listarPorPeriodo($inicio, $fim, $setor, $status, $tecnico);
+    // Recupera filtros
+    $filtros = $_SESSION['filtros_relatorio'] ?? [];
+    $inicio = $filtros['inicio'] ?? null;
+    $fim = $filtros['fim'] ?? null;
+    $setor = $filtros['setor'] ?? null;
+    $status = $filtros['status'] ?? null;
+    $tecnico = $filtros['tecnico'] ?? null;
 
-        $pdf = new TCPDF();
-        $pdf->SetCreator('ManutSmart');
-        $pdf->SetAuthor('ManutSmart');
-        $pdf->SetTitle('Relatório de Chamados');
-        $pdf->AddPage();
+    $chamado = new Chamado();
+    $dadosChamados = $chamado->listarPorPeriodo($inicio, $fim, $setor, $status, $tecnico);
 
-        $html = '<h2>Relatório de Chamados</h2>
-                 <table border="1" cellpadding="4">
-                 <thead><tr>
-                    <th>ID</th><th>Descrição</th><th>Localização</th><th>Setor</th>
-                    <th>Tipo</th><th>Técnico</th><th>Status</th><th>Prioridade</th><th>Data</th>
-                 </tr></thead><tbody>';
+    // Orientação paisagem (L)
+    $pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+    $pdf->SetCreator('ManutSmart');
+    $pdf->SetAuthor('ManutSmart');
+    $pdf->SetTitle('Relatório de Chamados');
+    $pdf->SetMargins(10, 15, 10);
+    $pdf->AddPage();
 
-        foreach ($dadosChamados as $d) {
-            $html .= '<tr>
-                <td>'.$d['id'].'</td>
-                <td>'.$d['descricao'].'</td>
-                <td>'.$d['localizacao'].'</td>
-                <td>'.$d['setor_nome'].'</td>
-                <td>'.$d['tipo_nome'].'</td>
-                <td>'.$d['tecnico_nome'].'</td>
-                <td>'.$d['status'].'</td>
-                <td>'.$d['prioridade_nome'].'</td>
-                <td>'.$d['data_criacao'].'</td>
-            </tr>';
-        }
+    // Cabeçalho bonito
+    $pdf->SetFont('helvetica', 'B', 16);
+    $pdf->Cell(0, 10, 'RELATÓRIO DE CHAMADOS - MANUTSMART', 0, 1, 'C');
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 8, 'Período: ' . ($inicio ?: '---') . ' até ' . ($fim ?: '---'), 0, 1, 'C');
+    $pdf->Ln(4);
 
-        $html .= '</tbody></table>';
-        $pdf->writeHTML($html);
-        $pdf->Output('relatorio_chamados.pdf', 'D');
+    // Cabeçalho da tabela
+    $pdf->SetFont('helvetica', 'B', 9);
+    $pdf->SetFillColor(60, 141, 188); // azul
+    $pdf->SetTextColor(255, 255, 255);
 
-        // Salvar no banco
-        $relatorio = new RelatorioGerado();
-        $relatorio->tipo = "PDF";
-        $relatorio->gerado_por = $_SESSION['usuario_id'] ?? null;
-        $relatorio->periodo_inicio = $inicio;
-        $relatorio->periodo_fim = $fim;
-        $relatorio->data_geracao = date('Y-m-d H:i:s');
-        $relatorio->criar();
+    $pdf->Cell(10, 8, 'ID', 1, 0, 'C', 1);
+    $pdf->Cell(50, 8, 'Descrição', 1, 0, 'C', 1);
+    $pdf->Cell(35, 8, 'Localização', 1, 0, 'C', 1);
+    $pdf->Cell(25, 8, 'Setor', 1, 0, 'C', 1);
+    $pdf->Cell(25, 8, 'Tipo', 1, 0, 'C', 1);
+    $pdf->Cell(35, 8, 'Técnico', 1, 0, 'C', 1);
+    $pdf->Cell(25, 8, 'Status', 1, 0, 'C', 1);
+    $pdf->Cell(25, 8, 'Prioridade', 1, 0, 'C', 1);
+    $pdf->Cell(35, 8, 'Data Criação', 1, 1, 'C', 1);
+
+    // Corpo da tabela
+    $pdf->SetFont('helvetica', '', 9);
+    $pdf->SetTextColor(0, 0, 0);
+
+    $fill = 0;
+    foreach ($dadosChamados as $d) {
+        $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255); // cor alternada
+
+        $pdf->Cell(10, 8, $d['id'], 1, 0, 'C', $fill);
+        $pdf->MultiCell(50, 8, $d['descricao'], 1, 'L', $fill, 0);
+        $pdf->MultiCell(35, 8, $d['localizacao'], 1, 'L', $fill, 0);
+        $pdf->Cell(25, 8, $d['setor_nome'], 1, 0, 'L', $fill);
+        $pdf->Cell(25, 8, $d['tipo_nome'], 1, 0, 'L', $fill);
+        $pdf->Cell(35, 8, $d['tecnico_nome'], 1, 0, 'L', $fill);
+         $pdf->MultiCell(25, 8, $d['status'], 1, 'C', $fill, 0);
+        $pdf->Cell(25, 8, $d['prioridade_nome'], 1, 0, 'C', $fill);
+        $pdf->Cell(35, 8, $d['data_criacao'], 1, 1, 'C', $fill);
+
+        $fill = !$fill; // alterna cor da linha
     }
+
+    // Rodapé
+    $pdf->Ln(5);
+    $pdf->SetFont('helvetica', 'I', 8);
+    $pdf->Cell(0, 10, 'Gerado por ManutSmart em ' . date('d/m/Y H:i'), 0, 0, 'R');
+
+    $pdf->Output('relatorio_chamados.pdf', 'D');
+
+    // Registro no banco
+    $relatorio = new RelatorioGerado();
+    $relatorio->tipo = "PDF";
+    $relatorio->gerado_por = $_SESSION['usuario_id'] ?? null;
+    $relatorio->periodo_inicio = $inicio;
+    $relatorio->periodo_fim = $fim;
+    $relatorio->data_geracao = date('Y-m-d H:i:s');
+    $relatorio->criar();
+}
+
 
     // Exportar Excel
     public function exportarExcel() {
@@ -191,6 +223,7 @@ class RelatoriosController
         $relatorio->criar();
         exit;
     }
+
 
     // Excluir relatório
     public function excluir() {

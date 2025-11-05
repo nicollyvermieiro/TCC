@@ -35,6 +35,10 @@ if (hasFlashMessage()):
         </div>
         <button type="submit" class="btn btn-primary w-100">Entrar</button>
     </form>
+
+    <div class="text-center mt-3">
+        <a href="?route=auth/esqueciSenha" class="text-decoration-none">Esqueci minha senha</a>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

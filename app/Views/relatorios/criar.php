@@ -2,8 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../../helpers/session.php';
 
-if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
-    setFlashMessage("Acesso negado. Área restrita a administradores.", "danger");
+if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['cargo_id'] ?? null, [1, 2])) {
+    setFlashMessage("Acesso negado. Área restrita a administradores e técnicos.", "danger");
     header("Location: ?route=auth/dashboard");
     exit;
 }

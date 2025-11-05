@@ -19,7 +19,7 @@
     <?php endif; ?>
 
     <div class="container mt-4">
-        <h1 class="mb-4">Criar Prioridade</h1>
+        <h2 class="mb-4">Criar Prioridade</h2>
 
         <form method="post" action="?route=prioridades/salvar">
             <div class="mb-3">

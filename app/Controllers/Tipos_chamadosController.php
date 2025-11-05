@@ -15,7 +15,7 @@ class Tipos_chamadosController
         if (session_status() === PHP_SESSION_NONE) session_start();
 
         if (!isset($_SESSION['usuario_id']) || ($_SESSION['cargo_id'] ?? null) != 1) {
-            setFlashMessage("Acesso negado. Área restrita a administradores.", "danger");
+            setFlashMessage("Acesso negado. Área restrita aos administradores.", "danger");
             header("Location: ?route=auth/dashboard");
             exit;
         }

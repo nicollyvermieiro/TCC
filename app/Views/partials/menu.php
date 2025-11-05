@@ -16,30 +16,28 @@ function isLogged() {
 }
 ?>
 
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
+    <!-- Sempre mostra apenas o nome da aplicação -->
     <a class="navbar-brand" href="?">ManutSmart</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <?php if (isLogged()): ?>
+      <!-- Botão de toggle e menu apenas se estiver logado -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="collapse navbar-collapse" id="mainNavbar">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <?php if (isLogged()): ?>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <?php if (isAdmin()): ?>
+              <!-- Usuários -->
+              <li class="nav-item">
+                <a class="nav-link" href="?route=usuarios/listar">Usuários</a>
+              </li>
+          <?php endif; ?>
+        </ul>
 
-            <?php if (isAdmin()): ?>
-                <!-- Usuários -->
-                <li class="nav-item">
-                  <a class="nav-link" href="?route=usuarios/listar">Usuários</a>
-                </li>                
-            <?php endif; ?>
-        <?php endif; ?>
-      </ul>
-
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <?php if (isLogged()): ?>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <!-- Usuário logado -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -49,13 +47,8 @@ function isLogged() {
               <li><a class="dropdown-item" href="?route=auth/logout">Sair</a></li>
             </ul>
           </li>
-        <?php else: ?>
-          <!-- Login -->
-          <li class="nav-item">
-            <a class="nav-link" href="?route=auth/loginForm">Login</a>
-          </li>
-        <?php endif; ?>
-      </ul>
-    </div>
+        </ul>
+      </div>
+    <?php endif; ?>
   </div>
 </nav>

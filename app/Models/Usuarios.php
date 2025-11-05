@@ -129,4 +129,32 @@ public function atualizar() {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+    public function salvarTokenRecuperacao($id, $token)
+    {
+        $query = "UPDATE usuario SET token_recuperacao = :token WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':token', $token);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+
+    public function buscarPorToken($token)
+    {
+        $query = "SELECT * FROM usuario WHERE token_recuperacao = :token LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':token', $token);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function atualizarSenha($id, $novaSenha)
+    {
+        $query = "UPDATE usuario SET senha = :senha, token_recuperacao = NULL WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':senha', $novaSenha);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+
+
 }

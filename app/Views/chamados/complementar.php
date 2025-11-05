@@ -37,18 +37,24 @@
             <?php if (!empty($dados['anexos'])): ?>
                 <div class="mb-3">
                     <label class="form-label">Anexos do Chamado:</label>
-                    <ul class="list-group">
+                    <div class="row">
                         <?php foreach ($dados['anexos'] as $anexo): ?>
-                            <li class="list-group-item">
-                                <a href="<?= htmlspecialchars($anexo['caminho']) ?>" target="_blank">
-                                    <?= htmlspecialchars($anexo['nome_arquivo']) ?>
+                            <div class="col-md-3 mb-3 text-center">
+                                <?php
+                                    $caminho = htmlspecialchars($anexo['caminho']);
+                                    $ext = strtolower(pathinfo($caminho, PATHINFO_EXTENSION));
+                                ?>
+
+                               <?php if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])): ?>
+                                <a href="<?= $caminho ?>" target="_blank">
+                                    <img src="<?= $caminho ?>" alt="Anexo" class="img-fluid rounded shadow-sm" style="max-height: 180px; object-fit: cover;">
                                 </a>
-                            </li>
+                                <?php endif; ?>
+                            </div>
                         <?php endforeach; ?>
-                    </ul>
+                    </div>
                 </div>
             <?php endif; ?>
-
             <div class="mb-3">
                 <label for="tipo_id" class="form-label">Categoria do Chamado</label>
                 <select name="tipo_id" id="tipo_id" class="form-select" required>

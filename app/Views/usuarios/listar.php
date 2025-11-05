@@ -38,7 +38,7 @@
 
     <?php $flash = getFlashMessage(); ?>
     <?php if ($flash): ?>
-        <div class="container mt-4">
+        <div class="container mt-3">
             <div class="alert alert-<?= htmlspecialchars($flash['type']) ?> alert-dismissible fade show" role="alert">
                 <?= htmlspecialchars($flash['message']) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -49,9 +49,14 @@
     <div class="container mt-5">
         <!-- Cabeçalho com botão voltar -->
         <div class="d-flex justify-content-between mb-3">
-            <button class="btn btn-secondary" onclick="window.history.back();">
-                <i class="bi bi-arrow-left"></i> 
-            </button>
+            <div class="top-actions">
+                <a href="?route=auth/dashboard"
+                class="text-primary fs-3 mb-2 btn-back"
+                title="Voltar ao painel"
+                style="text-decoration: none;">
+                    <i class="bi bi-arrow-left-circle"></i>
+                </a>
+            </div>
             <a href="?route=usuarios/criar" class="btn btn-success">
                 <i class="bi bi-plus-lg"></i> Novo Usuário
             </a>
