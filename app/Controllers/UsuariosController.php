@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Models/Usuarios.php';
-require_once __DIR__ . '/../helpers/session.php'; // Para setFlashMessage() e getFlashMessage()
+require_once __DIR__ . '/../helpers/session.php'; 
 
 class UsuariosController
 {
@@ -75,7 +75,7 @@ class UsuariosController
             $usuario = new Usuarios();
             $usuario->nome = $_POST['nome'] ?? '';
             $usuario->email = $_POST['email'] ?? '';
-            $usuario->senha = password_hash($_POST['senha'] ?? '', PASSWORD_DEFAULT);
+            $usuario->senha = $_POST['senha'] ?? '';
             $usuario->cargo_id = 1;
 
             if ($usuario->criar()) {

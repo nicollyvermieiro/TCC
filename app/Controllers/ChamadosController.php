@@ -15,13 +15,14 @@ class ChamadosController
     }
 
     // ========================
-    // FORMULÁRIO DE CRIAÇÃO
+    // FORMULÁRIO DE CRIAÇÃO DE CHAMADO
     // ========================
     public function criarUsuario() {
-        $isGuest = isset($_GET['guest']) && $_GET['guest'] == 1;
+        if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+        $isGuest = isset($_GET['guest']) && $_GET['guest'] == 3;
 
         if($isGuest){
-            // Identificação temporária para visitante via QR
             $_SESSION['is_guest'] = true;
             $usuarioNome = "Visitante";
         } else {

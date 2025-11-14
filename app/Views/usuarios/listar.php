@@ -131,6 +131,13 @@
             });
         });
     });
-    </script>                            
+    </script>   
+    
+    <footer class="bg-primary text-white text-center py-1 mt-4 fixed-bottom">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart. Todos os direitos reservados.
+        </div>
+    </footer>
+
 </body>
 </html>

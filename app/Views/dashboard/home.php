@@ -126,7 +126,13 @@ $usuario_nome = $_SESSION['usuario_nome'] ?? 'Usuário';
 <?php endif; ?>
 
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <footer class="bg-primary text-white text-center py-1 mt-4 fixed-bottom">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart
+        </div>
+    </footer>
+
 </body>
 </html>

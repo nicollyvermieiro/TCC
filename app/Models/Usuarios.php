@@ -44,6 +44,7 @@ class Usuarios {
 
 
         $stmt->bindParam(":nome", $this->nome);
+        $this->email = trim($this->email); 
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":senha", $senhaHash);
         $stmt->bindParam(":cargo_id", $this->cargo_id);
@@ -121,13 +122,14 @@ public function atualizar() {
         return false;
     }
 
-    public function buscarPorEmail($email) {
-    $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email LIMIT 1";
+   public function buscarPorEmail($email) {
+    $query = "SELECT * FROM " . $this->table_name . " WHERE LOWER(TRIM(email)) = LOWER(TRIM(:email)) LIMIT 1";
     $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':email', $email);
+    $stmt->bindValue(':email', $email);
     $stmt->execute();
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
 
     public function salvarTokenRecuperacao($id, $token)
     {

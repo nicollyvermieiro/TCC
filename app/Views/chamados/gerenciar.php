@@ -146,5 +146,12 @@ $cargo_id = $_SESSION['cargo_id'];
             <?php endif; ?>
         </div>
     </div>
+    <br>
+    <footer class="bg-primary text-white text-center py-1 mt-4 shadow-sm">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart
+        </div>
+    </footer>
+
 </body>
 </html>

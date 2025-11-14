@@ -41,5 +41,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <footer class="bg-primary text-white text-center py-1 mt-4 shadow-sm fixed-bottom">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart. Todos os direitos reservados.
+        </div>
+    </footer>
 </body>
 </html>

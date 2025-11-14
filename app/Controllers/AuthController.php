@@ -11,34 +11,44 @@ class AuthController
         include __DIR__ . '/../Views/auth/login.php';
     }
 
-    public function login()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = trim($_POST['email'] ?? '');
-            $senha = $_POST['senha'] ?? '';
+  public function login()
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $email = trim($_POST['email'] ?? '');
+        $senha = $_POST['senha'] ?? '';
 
-            $usuarioModel = new Usuarios();
-            $usuario = $usuarioModel->buscarPorEmail($email);
+        // Busca o usuário pelo e-mail
+        $usuarioModel = new Usuarios();
+        $usuario = $usuarioModel->buscarPorEmail($email);
 
-            if ($usuario && password_verify($senha, $usuario['senha'])) {
-                if (session_status() === PHP_SESSION_NONE) session_start();
-
-                $_SESSION['usuario_id'] = $usuario['id'];
-                $_SESSION['cargo_id'] = $usuario['cargo_id'];
-                $_SESSION['usuario_nome'] = $usuario['nome'];
-
-                header("Location: ?route=auth/dashboard");
-                exit;
+        // Verifica se encontrou e se a senha confere
+        if ($usuario && password_verify(trim($senha), $usuario['senha'])) {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
             }
 
-            setFlashMessage("Email ou senha inválidos.", "danger");
-            header("Location: ?route=auth/loginForm");
+            // Define as variáveis de sessão
+            $_SESSION['usuario_id'] = $usuario['id'];
+            $_SESSION['cargo_id'] = $usuario['cargo_id'];
+            $_SESSION['usuario_nome'] = $usuario['nome'];
+
+            // Redireciona para o dashboard
+            header("Location: ?route=auth/dashboard");
             exit;
         }
 
+        // Se falhar (email não encontrado ou senha incorreta)
+        setFlashMessage("Email ou senha inválidos.", "danger");
         header("Location: ?route=auth/loginForm");
         exit;
     }
+
+    // Caso o método não seja POST, volta para o formulário
+    header("Location: ?route=auth/loginForm");
+    exit;
+}
+
+
 
     public function logout()
     {

@@ -90,5 +90,11 @@ include __DIR__ . '/../partials/menu.php';
             </div>
         </div>
     </div>
+
+    <footer class="bg-primary text-white text-center py-1 mt-4 shadow-sm shadow-sm">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart. Todos os direitos reservados.
+        </div>
+    </footer>
 </body>
 </html>

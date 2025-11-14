@@ -73,12 +73,6 @@
             <div class="card-body p-4">
                 <form method="POST" action="?route=chamados/salvarUsuario" enctype="multipart/form-data">
                     
-                    <?php if (!empty($_SESSION['is_guest']) && $_SESSION['is_guest'] === true): ?>
-                    <div class="mb-3">
-                        <label for="nome" class="form-label"><i class="bi bi-person"></i> Seu Nome (opcional)</label>
-                        <input type="text" name="nome" id="nome" class="form-control" placeholder="Digite seu nome ou deixe em branco">
-                    </div>
-                    <?php endif; ?>
 
                     <div class="mb-3">
                         <label for="descricao" class="form-label"><i class="bi bi-pencil-square"></i> Descrição do Problema</label>
@@ -109,5 +103,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- <footer class="bg-primary text-white text-center py-1 mt-4 shadow-sm shadow-sm">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart
+        </div>
+    </footer> -->
 </body>
 </html>

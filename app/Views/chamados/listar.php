@@ -76,7 +76,7 @@ $perfil = $_SESSION['cargo_id'] ?? 3; // 1=admin, 2=técnico, 3=usuário
 
 <div class="container mt-3">
     <div class="top-actions">
-        <a href="?route=chamados/gerenciar"
+        <a href="?route=auth/dashboard"
            class="text-primary fs-3 mb-2 btn-back"
            title="Voltar ao painel"
            style="text-decoration: none;">
@@ -226,6 +226,12 @@ document.querySelectorAll('.btn-excluir').forEach(btn => {
     });
 });
 </script>
+
+    <!-- <footer class="bg-primary text-white text-center py-1 mt-4 ">
+        <div style="font-size: 0.8rem; opacity: 0.8;">
+            &copy; 2025 ManutSmart. Todos os direitos reservados.
+        </div>
+    </footer> -->
 
 </body>
 </html>
