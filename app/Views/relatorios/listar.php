@@ -144,7 +144,7 @@ $relatorios = $relatorios ?? [];
                             <table class="table table-striped table-bordered align-middle mb-0">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>ID</th>
+                                        <!-- <th>ID</th> -->
                                         <th>Tipo</th>
                                         <th>Período</th>
                                         <th>Gerado Por</th>
@@ -160,7 +160,7 @@ $relatorios = $relatorios ?? [];
                                             $geracao = !empty($r['data_geracao']) ? date('d/m/Y H:i', strtotime($r['data_geracao'])) : '—';
                                         ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($r['id']) ?></td>
+                                            <!-- <td><?= htmlspecialchars($r['id']) ?></td> -->
                                             <td><?= htmlspecialchars($r['tipo']) ?></td>
                                             <td><?= htmlspecialchars($inicio) ?> até <?= htmlspecialchars($fim) ?></td>
                                             <td><?= htmlspecialchars($r['usuario_nome'] ?? '—') ?></td>
@@ -218,14 +218,9 @@ document.querySelectorAll('.btn-excluir').forEach(btn => {
 });
 </script>
 
-    <footer class="bg-primary text-white text-center py-1 mt-4 shadow-sm shadow-sm">
-        <div class="container small">
-            <strong>ManutSmart</strong> — Software para gestão de manutenção inteligente<br>
-            Desenvolvido por <strong>Nicolly Vermieiro Ferreira</strong> — UNIGRAN | 2025<br>
-        </div>
-        <br>
+    <footer class="bg-primary text-white text-center py-1 mt-4 shadow-sm">
         <div style="font-size: 0.8rem; opacity: 0.8;">
-            &copy; 2025 ManutSmart. Todos os direitos reservados.
+            &copy; 2025 ManutSmart. 
         </div>
     </footer>
 </body>

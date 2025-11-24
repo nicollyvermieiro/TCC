@@ -28,7 +28,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="nivel" class="form-label">Nível (1 = mais urgente, 5 = menos urgente):</label>
+                <label for="nivel" class="form-label">Nível (1 = menos urgente - 5 = mais urgente):</label>
                 <input type="number" class="form-control" id="nivel" name="nivel" min="1" max="5" required>
             </div>
 

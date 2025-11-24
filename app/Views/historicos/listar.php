@@ -13,22 +13,20 @@
             margin: 20px auto;
             border-radius: 12px;
         }
+        /* Estilos do novo cabeçalho */
         .card-header {
-            background-color: #0d6efd;
+            background-color: #0d6efd; /* Cor azul primária do Bootstrap */
             color: #fff;
             font-weight: bold;
             font-size: 1.2rem;
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
+            display: flex;
+            justify-content: space-between; /* Alinha itens nas extremidades */
+            align-items: center;
         }
-        .btn-back {
-            text-decoration: none;
-            color: #0d6efd;
-        }
-        .btn-back:hover {
-            color: #0a58ca;
-            transform: scale(1.1);
-            transition: 0.2s;
+        .card-header .btn {
+            color: #fff; /* Garante que o texto/ícone do botão seja branco */
         }
         .btn-primary {
             background-color: #0d6efd;
@@ -55,7 +53,7 @@
 <body>
 <?php
 include __DIR__ . '/../partials/menu.php';
-$flash = getFlashMessage();
+$flash = getFlashMessage( );
 $perfil = $_SESSION['cargo_id'] ?? 3;
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 ?>
@@ -70,15 +68,22 @@ $usuario_id = $_SESSION['usuario_id'] ?? null;
 <?php endif; ?>
 
 <div class="container mt-3">
-    <div class="top-actions">
-        <a href="javascript:history.back()" class="fs-3 btn-back" title="Voltar para página anterior">
-            <i class="bi bi-arrow-left-circle"></i>
-        </a>
-    </div>
+    <!-- Removido o div.top-actions e o botão de voltar solto -->
 
     <div class="card shadow-sm">
+        <!-- MUDANÇA: Novo card-header com o botão de voltar integrado -->
         <div class="card-header">
-            <i class="bi bi-clock-history"></i> Histórico de Chamados Concluídos
+            <!-- Título -->
+            <div>
+                <i class="bi bi-clock-history"></i> Histórico de Chamados Concluídos
+            </div>
+            
+            <!-- BOTÃO DE VOLTAR CAMUFLADO -->
+            <a href="?route=chamados/gerenciar"
+               class="btn btn-primary btn-sm"
+               title="Voltar ao painel">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
         </div>
         <div class="card-body p-3">
             <!-- Formulário de filtro -->
@@ -218,7 +223,7 @@ $usuario_id = $_SESSION['usuario_id'] ?? null;
 
     <footer class="bg-primary text-white text-center py-1 mt-4 fixed-bottom">
         <div style="font-size: 0.8rem; opacity: 0.8;">
-            &copy; 2025 ManutSmart. Todos os direitos reservados.
+            &copy; 2025 ManutSmart. 
         </div>
     </footer>
 </body>

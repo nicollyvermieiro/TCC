@@ -4,7 +4,8 @@
         "ext-pdo": "*",
         "tecnickcom/tcpdf": "^6.10",
         "phpoffice/phpspreadsheet": "^1.29",
-        "phpmailer/phpmailer": "^7.0"
+        "phpmailer/phpmailer": "^7.0",
+        "prom-client/prom-client-php": "^2.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.5"
