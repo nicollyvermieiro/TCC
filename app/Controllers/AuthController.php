@@ -98,7 +98,6 @@ class AuthController
     $token = bin2hex(random_bytes(16));
     $saved = $usuarioModel->salvarTokenRecuperacao($usuario['id'], $token);
     if (!$saved) {
-        // algo deu errado salvando token
         error_log("Falha ao salvar token de recuperação para usuário id={$usuario['id']}");
         setFlashMessage("Erro interno. Tente novamente mais tarde.", "danger");
         header("Location: ?route=auth/esqueciSenha");
@@ -115,12 +114,12 @@ class AuthController
         require_once __DIR__ . '/../../vendor/autoload.php';
 
         $mail = new PHPMailer(true);
-        // configuração SMTP - ajuste se necessário
+        // configuração SMTP - ajuste
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = '802.427@alunos.unigran.br';        // altere
-        $mail->Password = 'ycky llrd cmzk pvuu';          // altere (app password)
+        $mail->Username = 'exemplo@teste.com';        
+        $mail->Password = 'teste123';          
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         $mail->CharSet = 'UTF-8';
@@ -139,7 +138,6 @@ class AuthController
 
         $mail->send();
 
-        // sucesso -> flash + redireciona para loginForm (sua view exibirá Swal)
         setFlashMessage("Email de recuperação enviado. Verifique sua caixa de entrada (ou spam).", "success");
         header("Location: ?route=auth/loginForm");
         exit;
